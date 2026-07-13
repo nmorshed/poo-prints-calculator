@@ -770,7 +770,6 @@ class Settings_Page {
             '[pooprints_sidenav]'          => __( 'Renders a side navigation from the menu chosen under Settings → General → Side navigation menu. Top-level links only (Appearance → Menus). Use Elementor’s sticky on the column or widget if you want it fixed while scrolling.', 'pooprints-calculator' ),
             '[pooprints_sidenav menu="slug"]' => __( 'Same as [pooprints_sidenav] but uses a specific menu: WordPress menu ID, slug, or name (overrides the setting).', 'pooprints-calculator' ),
             '[pooprints_value key="..."]'  => __( 'Renders a live dynamic value span inside prose text. Alias: [pp_value key="..."]', 'pooprints-calculator' ),
-            '[pooprints_form_v2]'         => __( 'Renders the four-step PooPrints Form v2 order form with Keap field updates, ContactNotes, and stage tags.', 'pooprints-calculator' ),
             '[pooprints_fine_tables]'      => __( 'Renders both fine reference tables side by side (breakeven + profit/loss).', 'pooprints-calculator' ),
             '[pooprints_fine_tables show="breakeven"]' => __( 'Renders only the Breakeven Fine Amount table.', 'pooprints-calculator' ),
             '[pooprints_fine_tables show="profit"]'    => __( 'Renders only the Waste Testing Profit (Loss) table.', 'pooprints-calculator' ),
