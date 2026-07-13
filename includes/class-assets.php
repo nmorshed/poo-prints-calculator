@@ -24,6 +24,12 @@ class Assets {
             [],
             POOPRINTS_VERSION
         );
+        wp_register_style(
+            'pooprints-form-v2',
+            POOPRINTS_URL . 'assets/form-v2.css',
+            [],
+            POOPRINTS_VERSION
+        );
         wp_register_script(
             'pooprints-calculator',
             POOPRINTS_URL . 'assets/main.js',
@@ -38,9 +44,26 @@ class Assets {
             POOPRINTS_VERSION,
             true
         );
+        wp_register_script(
+            'pooprints-form-v2',
+            POOPRINTS_URL . 'assets/form-v2.js',
+            [],
+            POOPRINTS_VERSION,
+            true
+        );
     }
 
     public static function maybe_enqueue() {
+        if ( Shortcodes::$enqueue_form_v2 ) {
+            wp_enqueue_style( 'pooprints-form-v2' );
+            wp_enqueue_script( 'pooprints-form-v2' );
+            wp_localize_script( 'pooprints-form-v2', 'ppFormV2', [
+                'ajax_url' => admin_url( 'admin-ajax.php' ),
+                'nonce'    => wp_create_nonce( 'pooprints_form_v2' ),
+                'action'   => 'pooprints_form_v2_submit',
+            ] );
+        }
+
         if ( ! Shortcodes::$enqueue_assets && ! Shortcodes::$enqueue_sidenav ) {
             return;
         }
@@ -79,6 +102,12 @@ class Assets {
      * has already fired, so wp_enqueue_style alone won't output the <link> tag.
      */
     public static function maybe_print_late_styles() {
+        if ( Shortcodes::$enqueue_form_v2 ) {
+            wp_print_styles( 'pooprints-form-v2' );
+            wp_print_styles( 'pooprints-inter' );
+            wp_print_scripts( 'pooprints-form-v2' );
+        }
+
         if ( ! Shortcodes::$enqueue_assets && ! Shortcodes::$enqueue_sidenav ) {
             return;
         }
