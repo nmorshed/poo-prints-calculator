@@ -25,9 +25,13 @@
       var parts = rule.split(':');
       var shouldShow = parts.length === 2 && fieldValue(parts[0]) === parts[1];
       section.classList.toggle('is-visible', shouldShow);
+    });
+
+    root.querySelectorAll('[data-pp-show-if]').forEach(function (section) {
+      var isVisible = section.classList.contains('is-visible') && !section.parentElement.closest('.pp-form-v2__conditional:not(.is-visible)');
 
       section.querySelectorAll('input, select, textarea').forEach(function (input) {
-        input.disabled = !shouldShow;
+        input.disabled = !isVisible;
       });
     });
   }
@@ -53,7 +57,7 @@
     if (prevBtn) prevBtn.style.display = step === 1 || step === 4 ? 'none' : '';
     if (nextBtn) {
       nextBtn.style.display = step === 4 ? 'none' : '';
-      nextBtn.textContent = step === 3 ? 'Submit Order' : 'Continue';
+      nextBtn.textContent = step === 3 ? 'Submit Info' : 'Continue';
     }
 
     showNotice('', 'info');
@@ -117,7 +121,7 @@
       .finally(function () {
         if (!silent) {
           nextBtn.disabled = false;
-          nextBtn.textContent = step === 3 ? 'Submit Order' : 'Continue';
+          nextBtn.textContent = step === 3 ? 'Submit Info' : 'Continue';
         }
       });
   }
@@ -131,6 +135,10 @@
     clone.querySelectorAll('input, select').forEach(function (field) {
       field.value = '';
       if (field.type === 'checkbox' || field.type === 'radio') field.checked = false;
+    });
+    var index = list.querySelectorAll('.pp-form-v2__repeat-item').length;
+    clone.querySelectorAll('[name^="hoa_on_board"]').forEach(function (field) {
+      field.name = 'hoa_on_board[' + index + ']';
     });
     list.appendChild(clone);
   }

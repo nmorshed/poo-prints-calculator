@@ -110,7 +110,9 @@ class Ajax {
 
         if ( 3 === $step ) {
             self::append_form_v2_notes( 'Organization & Submit', $posted, [
-                'management_type'                 => 'Organization type',
+                'has_management_company'          => 'Has management company',
+                'community_type'                  => 'Community type',
+                'self_managed'                    => 'Rental community is self managed',
                 'management_company_name'         => 'Management company name',
                 'management_address1'             => 'Management company USPS address',
                 'management_address2'             => 'Management company unit/suite',
@@ -211,7 +213,7 @@ class Ajax {
         );
 
         $updated = trim( $existing );
-        $updated = $updated ? $updated . "\n\n" . $entry : $entry;
+        $updated = $updated ? $entry . "\n\n" . $updated : $entry;
 
         memb_setContactField( 'ContactNotes', $updated );
     }

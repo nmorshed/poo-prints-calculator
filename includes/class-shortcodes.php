@@ -414,12 +414,11 @@ class Shortcodes {
                         <h2>Organization &amp; Submit</h2>
                         <fieldset class="pp-choice">
                             <legend>Is there a management company?</legend>
-                            <label><input type="radio" name="management_type" value="management_company"> Yes</label>
-                            <label><input type="radio" name="management_type" value="self_managed"> No / Self-managed</label>
-                            <label><input type="radio" name="management_type" value="hoa"> HOA / Association</label>
+                            <label><input type="radio" name="has_management_company" value="yes" checked> Yes</label>
+                            <label><input type="radio" name="has_management_company" value="no"> No</label>
                         </fieldset>
 
-                        <div class="pp-form-v2__conditional" data-pp-show-if="management_type:management_company">
+                        <div class="pp-form-v2__conditional" data-pp-show-if="has_management_company:yes">
                             <h3>Management Company</h3>
                             <div class="pp-form-v2__grid">
                                 <label class="pp-field pp-field--full">Management Company Name
@@ -470,7 +469,23 @@ class Shortcodes {
                             </div>
                         </div>
 
-                        <div class="pp-form-v2__conditional" data-pp-show-if="management_type:self_managed">
+                        <div class="pp-form-v2__conditional" data-pp-show-if="has_management_company:no">
+                            <fieldset class="pp-choice">
+                                <legend>What type of community is this?</legend>
+                                <label><input type="radio" name="community_type" value="hoa"> HOA</label>
+                                <label><input type="radio" name="community_type" value="rental_community"> Rental Community</label>
+                            </fieldset>
+                        </div>
+
+                        <div class="pp-form-v2__conditional" data-pp-show-if="community_type:rental_community">
+                            <fieldset class="pp-choice">
+                                <legend>Is this rental community self managed?</legend>
+                                <label><input type="radio" name="self_managed" value="yes"> Yes</label>
+                                <label><input type="radio" name="self_managed" value="no"> No</label>
+                            </fieldset>
+                        </div>
+
+                        <div class="pp-form-v2__conditional" data-pp-show-if="self_managed:yes">
                             <h3>Property Owner</h3>
                             <div class="pp-form-v2__grid">
                                 <label class="pp-field pp-field--span-6">Owner First Name
@@ -491,7 +506,7 @@ class Shortcodes {
                             </div>
                         </div>
 
-                        <div class="pp-form-v2__conditional" data-pp-show-if="management_type:hoa">
+                        <div class="pp-form-v2__conditional" data-pp-show-if="community_type:hoa">
                             <h3>Community Association Contacts</h3>
                             <div class="pp-form-v2__repeat" data-pp-hoa-list>
                                 <div class="pp-form-v2__grid pp-form-v2__repeat-item">
@@ -507,16 +522,44 @@ class Shortcodes {
                                     <label class="pp-field pp-field--span-6">Role in the Association
                                         <input name="hoa_role[]" type="text" placeholder="Role in the association">
                                     </label>
-                                    <label class="pp-field pp-field--full">Are you on the association board?
-                                        <select name="hoa_on_board[]">
-                                            <option value="">Select an answer</option>
-                                            <option value="yes">Yes</option>
-                                            <option value="no">No</option>
-                                        </select>
-                                    </label>
+                                    <fieldset class="pp-choice pp-field--full">
+                                        <legend>Are you on the association board?</legend>
+                                        <label><input type="radio" name="hoa_on_board[0]" value="yes"> Yes</label>
+                                        <label><input type="radio" name="hoa_on_board[0]" value="no"> No</label>
+                                    </fieldset>
                                 </div>
                             </div>
                             <button type="button" class="pp-form-v2__ghost" data-pp-add-hoa>+ Add another contact</button>
+                        </div>
+
+                        <div class="pp-form-v2__conditional" data-pp-show-if="self_managed:no">
+                            <h3>Community Manager</h3>
+                            <div class="pp-form-v2__grid">
+                                <label class="pp-field pp-field--span-6">Community Manager First Name
+                                    <input name="community_manager_first_name" type="text" placeholder="First name">
+                                </label>
+                                <label class="pp-field pp-field--span-6">Community Manager Last Name
+                                    <input name="community_manager_last_name" type="text" placeholder="Last name">
+                                </label>
+                                <label class="pp-field pp-field--span-6">Community Manager Email
+                                    <input name="community_manager_email" type="email" placeholder="email@example.com">
+                                </label>
+                                <label class="pp-field pp-field--span-6">Job Title
+                                    <input name="community_manager_job_title" type="text" placeholder="e.g. Community Manager">
+                                </label>
+                                <label class="pp-field pp-field--span-6">Regional/Asset Manager First Name
+                                    <input name="regional_manager_first_name" type="text" placeholder="First name">
+                                </label>
+                                <label class="pp-field pp-field--span-6">Regional/Asset Manager Last Name
+                                    <input name="regional_manager_last_name" type="text" placeholder="Last name">
+                                </label>
+                                <label class="pp-field pp-field--span-6">Regional/Asset Manager Email
+                                    <input name="regional_manager_email" type="email" placeholder="email@example.com">
+                                </label>
+                                <label class="pp-field pp-field--span-6">Job Title
+                                    <input name="regional_manager_job_title" type="text" placeholder="e.g. Regional Manager">
+                                </label>
+                            </div>
                         </div>
                     </section>
 
