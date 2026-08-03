@@ -153,6 +153,16 @@ class Shortcodes {
             'City3'                           => 'City3',
             'State3'                          => 'State3',
             'PostalCode3'                     => 'PostalCode3',
+            'Address2Street1'                 => 'Address2Street1',
+            'Address2Street2'                 => 'Address2Street2',
+            'City2'                           => 'City2',
+            'State2'                          => 'State2',
+            'PostalCode2'                     => 'PostalCode2',
+            'StreetAddress1'                  => 'StreetAddress1',
+            'StreetAddress2'                  => 'StreetAddress2',
+            'City'                            => 'City',
+            'State'                           => 'State',
+            'PostalCode'                      => 'PostalCode',
             'Phone1'                          => 'Phone1',
             '_ofUnits'                        => '_ofUnits',
             '_PropertyManagementSoftwareUsed' => '_PropertyManagementSoftwareUsed',
@@ -472,7 +482,7 @@ class Shortcodes {
                         <div class="pp-form-v2__conditional" data-pp-show-if="has_management_company:no">
                             <fieldset class="pp-choice">
                                 <legend>What type of community is this?</legend>
-                                <label><input type="radio" name="community_type" value="hoa"> HOA</label>
+                                <label><input type="radio" name="community_type" value="hoa" checked> HOA</label>
                                 <label><input type="radio" name="community_type" value="rental_community"> Rental Community</label>
                             </fieldset>
                         </div>
@@ -480,7 +490,7 @@ class Shortcodes {
                         <div class="pp-form-v2__conditional" data-pp-show-if="community_type:rental_community">
                             <fieldset class="pp-choice">
                                 <legend>Is this rental community self managed?</legend>
-                                <label><input type="radio" name="self_managed" value="yes"> Yes</label>
+                                <label><input type="radio" name="self_managed" value="yes" checked> Yes</label>
                                 <label><input type="radio" name="self_managed" value="no"> No</label>
                             </fieldset>
                         </div>

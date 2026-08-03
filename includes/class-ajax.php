@@ -48,6 +48,25 @@ class Ajax {
         }
 
         if ( 1 === $step ) {
+            if ( 'yes' === ( $posted['shipping_same'] ?? '' ) ) {
+                $posted['Address2Street1'] = $posted['Address3Street1'] ?? '';
+                $posted['Address2Street2'] = $posted['Address3Street2'] ?? '';
+                $posted['City2']           = $posted['City3'] ?? '';
+                $posted['State2']          = $posted['State3'] ?? '';
+                $posted['PostalCode2']     = $posted['PostalCode3'] ?? '';
+                $posted['StreetAddress1']  = $posted['Address3Street1'] ?? '';
+                $posted['StreetAddress2']  = $posted['Address3Street2'] ?? '';
+                $posted['City']            = $posted['City3'] ?? '';
+                $posted['State']           = $posted['State3'] ?? '';
+                $posted['PostalCode']      = $posted['PostalCode3'] ?? '';
+            } elseif ( 'no' === ( $posted['shipping_same'] ?? '' ) ) {
+                $posted['StreetAddress1'] = $posted['shipping_address1'] ?? '';
+                $posted['StreetAddress2'] = $posted['shipping_address2'] ?? '';
+                $posted['City']           = $posted['shipping_city'] ?? '';
+                $posted['State']          = $posted['shipping_state'] ?? '';
+                $posted['PostalCode']     = $posted['shipping_zip'] ?? '';
+            }
+
             self::save_form_v2_direct_fields( $posted, [
                 'Company',
                 'Address3Street1',
@@ -55,6 +74,16 @@ class Ajax {
                 'City3',
                 'State3',
                 'PostalCode3',
+                'Address2Street1',
+                'Address2Street2',
+                'City2',
+                'State2',
+                'PostalCode2',
+                'StreetAddress1',
+                'StreetAddress2',
+                'City',
+                'State',
+                'PostalCode',
                 'Phone1',
                 '_ofUnits',
             ] );
