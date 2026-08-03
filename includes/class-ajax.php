@@ -229,7 +229,7 @@ class Ajax {
             return;
         }
 
-        $existing = memb_getContactField( 'ContactNotes', true );
+        $existing = memb_getContactField( 'ContactNotes' );
         if ( ! is_string( $existing ) ) {
             $existing = '';
         }
