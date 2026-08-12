@@ -27,7 +27,20 @@
       section.classList.toggle('is-visible', shouldShow);
     });
 
-    root.querySelectorAll('[data-pp-show-if]').forEach(function (section) {
+    root.querySelectorAll('[data-pp-step3-branch]').forEach(function (section) {
+      var hasManagementCompany = fieldValue('has_management_company');
+      var propertyType = (root.getAttribute('data-pp-property-type') || '').trim().toLowerCase();
+      var branch = section.getAttribute('data-pp-step3-branch');
+      var shouldShow = false;
+
+      if (hasManagementCompany === 'no') {
+        shouldShow = propertyType === 'rental' ? branch === 'rental' : branch === 'hoa';
+      }
+
+      section.classList.toggle('is-visible', shouldShow);
+    });
+
+    root.querySelectorAll('.pp-form-v2__conditional').forEach(function (section) {
       var isVisible = section.classList.contains('is-visible') && !section.parentElement.closest('.pp-form-v2__conditional:not(.is-visible)');
 
       section.querySelectorAll('input, select, textarea').forEach(function (input) {

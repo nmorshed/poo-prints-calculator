@@ -49,11 +49,6 @@ class Ajax {
 
         if ( 1 === $step ) {
             if ( 'yes' === ( $posted['shipping_same'] ?? '' ) ) {
-                $posted['Address2Street1'] = $posted['Address3Street1'] ?? '';
-                $posted['Address2Street2'] = $posted['Address3Street2'] ?? '';
-                $posted['City2']           = $posted['City3'] ?? '';
-                $posted['State2']          = $posted['State3'] ?? '';
-                $posted['PostalCode2']     = $posted['PostalCode3'] ?? '';
                 $posted['StreetAddress1']  = $posted['Address3Street1'] ?? '';
                 $posted['StreetAddress2']  = $posted['Address3Street2'] ?? '';
                 $posted['City']            = $posted['City3'] ?? '';
@@ -74,11 +69,6 @@ class Ajax {
                 'City3',
                 'State3',
                 'PostalCode3',
-                'Address2Street1',
-                'Address2Street2',
-                'City2',
-                'State2',
-                'PostalCode2',
                 'StreetAddress1',
                 'StreetAddress2',
                 'City',
@@ -112,7 +102,15 @@ class Ajax {
             if ( 'Other' === $software && ! empty( $posted['software_other'] ) ) {
                 $posted['_PropertyManagementSoftwareUsed'] = $posted['software_other'];
             }
-            self::save_form_v2_direct_fields( $posted, [ '_PropertyManagementSoftwareUsed' ] );
+            self::save_form_v2_direct_fields( $posted, [
+                'billing_address1',
+                'billing_address2',
+                'billing_city',
+                'billing_state',
+                'billing_zip',
+                'ap_email',
+                '_PropertyManagementSoftwareUsed',
+            ] );
 
             if ( 'yes' === ( $posted['petscreening'] ?? '' ) && isset( $tags['petscreening_yes'] ) ) {
                 self::apply_form_v2_tags( [ $tags['petscreening_yes'] ] );
@@ -140,8 +138,6 @@ class Ajax {
         if ( 3 === $step ) {
             self::append_form_v2_notes( 'Organization & Submit', $posted, [
                 'has_management_company'          => 'Has management company',
-                'community_type'                  => 'Community type',
-                'self_managed'                    => 'Rental community is self managed',
                 'management_company_name'         => 'Management company name',
                 'management_address1'             => 'Management company USPS address',
                 'management_address2'             => 'Management company unit/suite',

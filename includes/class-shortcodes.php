@@ -153,6 +153,12 @@ class Shortcodes {
             'City3'                           => 'City3',
             'State3'                          => 'State3',
             'PostalCode3'                     => 'PostalCode3',
+            'billing_address1'                => 'Address2Street1',
+            'billing_address2'                => 'Address2Street2',
+            'billing_city'                    => 'City2',
+            'billing_state'                   => 'State2',
+            'billing_zip'                     => 'PostalCode2',
+            'ap_email'                        => '_BillingEmailAddresses',
             'Address2Street1'                 => 'Address2Street1',
             'Address2Street2'                 => 'Address2Street2',
             'City2'                           => 'City2',
@@ -243,9 +249,17 @@ class Shortcodes {
             array_unshift( $software_options, $values['_PropertyManagementSoftwareUsed'] );
         }
 
+        $property_type = '';
+        if ( function_exists( 'memb_getContactField' ) ) {
+            $property_type_raw = memb_getContactField( '_KindofPropertyQuoteFor' );
+            if ( $property_type_raw !== false && $property_type_raw !== null ) {
+                $property_type = (string) $property_type_raw;
+            }
+        }
+
         ob_start();
         ?>
-        <div class="pp-form-v2" data-pp-form-v2>
+        <div class="pp-form-v2" data-pp-form-v2 data-pp-property-type="<?php echo esc_attr( $property_type ); ?>">
             <ol class="pp-form-v2__steps" aria-label="<?php esc_attr_e( 'Order form progress', 'pooprints-calculator' ); ?>">
                 <li class="is-active" data-pp-step-dot="1"><span>1</span> Property &amp; Shipping</li>
                 <li data-pp-step-dot="2"><span>2</span> Billing &amp; Contact</li>
@@ -479,23 +493,7 @@ class Shortcodes {
                             </div>
                         </div>
 
-                        <div class="pp-form-v2__conditional" data-pp-show-if="has_management_company:no">
-                            <fieldset class="pp-choice">
-                                <legend>What type of community is this?</legend>
-                                <label><input type="radio" name="community_type" value="hoa" checked> HOA</label>
-                                <label><input type="radio" name="community_type" value="rental_community"> Rental Community</label>
-                            </fieldset>
-                        </div>
-
-                        <div class="pp-form-v2__conditional" data-pp-show-if="community_type:rental_community">
-                            <fieldset class="pp-choice">
-                                <legend>Is this rental community self managed?</legend>
-                                <label><input type="radio" name="self_managed" value="yes" checked> Yes</label>
-                                <label><input type="radio" name="self_managed" value="no"> No</label>
-                            </fieldset>
-                        </div>
-
-                        <div class="pp-form-v2__conditional" data-pp-show-if="self_managed:yes">
+                        <div class="pp-form-v2__conditional" data-pp-step3-branch="rental">
                             <h3>Property Owner</h3>
                             <div class="pp-form-v2__grid">
                                 <label class="pp-field pp-field--span-6">Owner First Name
@@ -516,7 +514,7 @@ class Shortcodes {
                             </div>
                         </div>
 
-                        <div class="pp-form-v2__conditional" data-pp-show-if="community_type:hoa">
+                        <div class="pp-form-v2__conditional" data-pp-step3-branch="hoa">
                             <h3>Community Association Contacts</h3>
                             <div class="pp-form-v2__repeat" data-pp-hoa-list>
                                 <div class="pp-form-v2__grid pp-form-v2__repeat-item">
@@ -540,36 +538,6 @@ class Shortcodes {
                                 </div>
                             </div>
                             <button type="button" class="pp-form-v2__ghost" data-pp-add-hoa>+ Add another contact</button>
-                        </div>
-
-                        <div class="pp-form-v2__conditional" data-pp-show-if="self_managed:no">
-                            <h3>Community Manager</h3>
-                            <div class="pp-form-v2__grid">
-                                <label class="pp-field pp-field--span-6">Community Manager First Name
-                                    <input name="community_manager_first_name" type="text" placeholder="First name">
-                                </label>
-                                <label class="pp-field pp-field--span-6">Community Manager Last Name
-                                    <input name="community_manager_last_name" type="text" placeholder="Last name">
-                                </label>
-                                <label class="pp-field pp-field--span-6">Community Manager Email
-                                    <input name="community_manager_email" type="email" placeholder="email@example.com">
-                                </label>
-                                <label class="pp-field pp-field--span-6">Job Title
-                                    <input name="community_manager_job_title" type="text" placeholder="e.g. Community Manager">
-                                </label>
-                                <label class="pp-field pp-field--span-6">Regional/Asset Manager First Name
-                                    <input name="regional_manager_first_name" type="text" placeholder="First name">
-                                </label>
-                                <label class="pp-field pp-field--span-6">Regional/Asset Manager Last Name
-                                    <input name="regional_manager_last_name" type="text" placeholder="Last name">
-                                </label>
-                                <label class="pp-field pp-field--span-6">Regional/Asset Manager Email
-                                    <input name="regional_manager_email" type="email" placeholder="email@example.com">
-                                </label>
-                                <label class="pp-field pp-field--span-6">Job Title
-                                    <input name="regional_manager_job_title" type="text" placeholder="e.g. Regional Manager">
-                                </label>
-                            </div>
                         </div>
                     </section>
 
