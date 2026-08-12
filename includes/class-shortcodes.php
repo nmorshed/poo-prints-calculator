@@ -237,7 +237,7 @@ class Shortcodes {
         foreach ( $direct_fields as $key => $field_name ) {
             $values[ $key ] = '';
             if ( function_exists( 'memb_getContactField' ) ) {
-                $raw = memb_getContactField( $field_name, true );
+                $raw = memb_getContactField( $field_name );
                 if ( $raw !== false && $raw !== null ) {
                     $values[ $key ] = (string) $raw;
                 }
@@ -312,19 +312,19 @@ class Shortcodes {
                                     <input name="shipping_name" type="text" placeholder="Property or company name">
                                 </label>
                                 <label class="pp-field pp-field--full">Shipping Address Line 1
-                                    <input name="shipping_address1" type="text" placeholder="Address line 1">
+                                    <input name="shipping_address1" type="text" value="<?php echo esc_attr( $values['StreetAddress1'] ); ?>" placeholder="Address line 1">
                                 </label>
                                 <label class="pp-field pp-field--full">Shipping Address Line 2
-                                    <input name="shipping_address2" type="text" placeholder="Address line 2">
+                                    <input name="shipping_address2" type="text" value="<?php echo esc_attr( $values['StreetAddress2'] ); ?>" placeholder="Address line 2">
                                 </label>
                                 <label class="pp-field pp-field--span-6">City
-                                    <input name="shipping_city" type="text" placeholder="Enter city">
+                                    <input name="shipping_city" type="text" value="<?php echo esc_attr( $values['City'] ); ?>" placeholder="Enter city">
                                 </label>
                                 <label class="pp-field pp-field--span-3">State
-                                    <input name="shipping_state" type="text" placeholder="State">
+                                    <input name="shipping_state" type="text" value="<?php echo esc_attr( $values['State'] ); ?>" placeholder="State">
                                 </label>
                                 <label class="pp-field pp-field--span-3">Zip Code
-                                    <input name="shipping_zip" type="text" placeholder="Zip code">
+                                    <input name="shipping_zip" type="text" value="<?php echo esc_attr( $values['PostalCode'] ); ?>" placeholder="Zip code">
                                 </label>
                             </div>
                         </div>
@@ -377,19 +377,19 @@ class Shortcodes {
                                 <input name="billing_company" type="text" placeholder="Enter company name">
                             </label>
                             <label class="pp-field pp-field--span-8">Billing Mailing Address
-                                <input name="billing_address1" type="text" placeholder="Enter U.S. Postal (USPS) address">
+                                <input name="billing_address1" type="text" value="<?php echo esc_attr( $values['billing_address1'] ); ?>" placeholder="Enter U.S. Postal (USPS) address">
                             </label>
                             <label class="pp-field pp-field--span-4">Unit or Suite # or Leasing Office
-                                <input name="billing_address2" type="text" placeholder="Unit # or leasing office">
+                                <input name="billing_address2" type="text" value="<?php echo esc_attr( $values['billing_address2'] ); ?>" placeholder="Unit # or leasing office">
                             </label>
                             <label class="pp-field pp-field--span-6">City
-                                <input name="billing_city" type="text" placeholder="Enter city">
+                                <input name="billing_city" type="text" value="<?php echo esc_attr( $values['billing_city'] ); ?>" placeholder="Enter city">
                             </label>
                             <label class="pp-field pp-field--span-3">State
-                                <input name="billing_state" type="text" placeholder="State">
+                                <input name="billing_state" type="text" value="<?php echo esc_attr( $values['billing_state'] ); ?>" placeholder="State">
                             </label>
                             <label class="pp-field pp-field--span-3">Zip Code
-                                <input name="billing_zip" type="text" placeholder="Zip code">
+                                <input name="billing_zip" type="text" value="<?php echo esc_attr( $values['billing_zip'] ); ?>" placeholder="Zip code">
                             </label>
                         </div>
 
@@ -412,7 +412,7 @@ class Shortcodes {
 
                         <h2>Billing &amp; Invoicing</h2>
                         <label class="pp-field pp-field--medium">Accounts Payable Email Address for Invoices
-                            <input name="ap_email" type="email" placeholder="email@example.com">
+                            <input name="ap_email" type="email" value="<?php echo esc_attr( $values['ap_email'] ); ?>" placeholder="email@example.com">
                         </label>
                         <fieldset class="pp-choice">
                             <legend>Do you currently use PetScreening?</legend>
