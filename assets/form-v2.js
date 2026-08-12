@@ -10,6 +10,7 @@
   var nextBtn = root.querySelector('[data-pp-next]');
   var currentStep = 1;
   var finalTagged = false;
+  var step3Initialized = false;
 
   function fieldValue(name) {
     var checked = form.querySelector('[name="' + name + '"]:checked');
@@ -58,6 +59,13 @@
 
   function showStep(step) {
     currentStep = step;
+    if (step === 3 && !step3Initialized) {
+      form.querySelectorAll('[name="has_management_company"]').forEach(function (field) {
+        field.checked = false;
+      });
+      step3Initialized = true;
+    }
+
     panels.forEach(function (panel) {
       panel.classList.toggle('is-active', parseInt(panel.dataset.ppStep, 10) === step);
     });

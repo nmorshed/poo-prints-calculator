@@ -257,6 +257,16 @@ class Shortcodes {
             }
         }
 
+        $petscreening_value = '';
+        $form_v2_tags       = self::form_v2_tags();
+        if ( function_exists( 'memb_hasAnyTags' ) ) {
+            if ( ! empty( $form_v2_tags['petscreening_yes'] ) && memb_hasAnyTags( $form_v2_tags['petscreening_yes'] ) ) {
+                $petscreening_value = 'yes';
+            } elseif ( ! empty( $form_v2_tags['petscreening_no'] ) && memb_hasAnyTags( $form_v2_tags['petscreening_no'] ) ) {
+                $petscreening_value = 'no';
+            }
+        }
+
         ob_start();
         ?>
         <div class="pp-form-v2" data-pp-form-v2 data-pp-property-type="<?php echo esc_attr( $property_type ); ?>">
@@ -393,7 +403,7 @@ class Shortcodes {
                             </label>
                         </div>
 
-                        <h2>Primary PooPrints Contact</h2>
+                        <h2 class="pp-form-v2__section-title">Primary PooPrints Contact</h2>
                         <p class="pp-form-v2__hint">Who will be primarily handling PooPrints at your community?</p>
                         <div class="pp-form-v2__grid">
                             <label class="pp-field pp-field--span-6">First Name
@@ -410,27 +420,29 @@ class Shortcodes {
                             </label>
                         </div>
 
-                        <h2>Billing &amp; Invoicing</h2>
+                        <h2 class="pp-form-v2__section-title">Billing &amp; Invoicing</h2>
                         <label class="pp-field pp-field--medium">Accounts Payable Email Address for Invoices
                             <input name="ap_email" type="email" value="<?php echo esc_attr( $values['ap_email'] ); ?>" placeholder="email@example.com">
                         </label>
                         <fieldset class="pp-choice">
                             <legend>Do you currently use PetScreening?</legend>
-                            <label><input type="radio" name="petscreening" value="yes"> Yes</label>
-                            <label><input type="radio" name="petscreening" value="no"> No</label>
+                            <label><input type="radio" name="petscreening" value="yes" <?php checked( $petscreening_value, 'yes' ); ?>> Yes</label>
+                            <label><input type="radio" name="petscreening" value="no" <?php checked( $petscreening_value, 'no' ); ?>> No</label>
                         </fieldset>
-                        <label class="pp-field pp-field--medium">What property management system software do you use?
-                            <select name="_PropertyManagementSoftwareUsed">
-                                <option value="">Select your property management software</option>
-                                <?php foreach ( $software_options as $option ) : ?>
-                                    <option value="<?php echo esc_attr( $option ); ?>" <?php selected( $values['_PropertyManagementSoftwareUsed'], $option ); ?>><?php echo esc_html( $option ); ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </label>
-                        <div class="pp-form-v2__conditional" data-pp-show-if="_PropertyManagementSoftwareUsed:Other">
-                            <label class="pp-field pp-field--medium">Software Name
-                                <input name="software_other" type="text" placeholder="Enter software name">
+                        <div class="pp-form-v2__conditional" data-pp-show-if="petscreening:yes">
+                            <label class="pp-field pp-field--medium">What property management system software do you use?
+                                <select name="_PropertyManagementSoftwareUsed">
+                                    <option value="">Select your property management software</option>
+                                    <?php foreach ( $software_options as $option ) : ?>
+                                        <option value="<?php echo esc_attr( $option ); ?>" <?php selected( $values['_PropertyManagementSoftwareUsed'], $option ); ?>><?php echo esc_html( $option ); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
                             </label>
+                            <div class="pp-form-v2__conditional" data-pp-show-if="_PropertyManagementSoftwareUsed:Other">
+                                <label class="pp-field pp-field--medium">Software Name
+                                    <input name="software_other" type="text" placeholder="Enter software name">
+                                </label>
+                            </div>
                         </div>
                     </section>
 
@@ -438,7 +450,7 @@ class Shortcodes {
                         <h2>Organization &amp; Submit</h2>
                         <fieldset class="pp-choice">
                             <legend>Is there a management company?</legend>
-                            <label><input type="radio" name="has_management_company" value="yes" checked> Yes</label>
+                            <label><input type="radio" name="has_management_company" value="yes"> Yes</label>
                             <label><input type="radio" name="has_management_company" value="no"> No</label>
                         </fieldset>
 
@@ -547,7 +559,7 @@ class Shortcodes {
                         <p>Once your order is processed (usually the same business day), we'll email you tracking details, your invoice, and next steps.</p>
                         <hr>
                         <p>To make sure our emails reach your inbox, click the link below to add us to your contacts.</p>
-                        <a class="pp-form-v2__outline" href="mailto:hello@pooprints.com">Add to Contacts</a>
+                        <a class="pp-form-v2__outline" href="https://s3.amazonaws.com/NoVacancy/users/Nick%2BT%2BBoosalis%2BPooPrints%2Bby%2BNo%2BVacancy.vcf">Add to Contacts</a>
                         <a class="pp-form-v2__home" href="<?php echo esc_url( home_url( '/' ) ); ?>">Return to Home</a>
                     </section>
 

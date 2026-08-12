@@ -3,7 +3,7 @@
  * Plugin Name: PooPrints Calculator
  * Plugin URI:  https://pooprints.com
  * Description: Embeddable DNA waste management calculators (Option 1, Option 2, ROI) and optional menu-driven side nav via shortcodes.
- * Version:     1.2.0
+ * Version:     1.2.1
  * Author:      PooPrints
  * Text Domain: pooprints-calculator
  * License:     GPL-2.0-or-later
@@ -11,7 +11,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'POOPRINTS_VERSION', '1.2.0' );
+define( 'POOPRINTS_VERSION', '1.2.1' );
 define( 'POOPRINTS_DIR',     plugin_dir_path( __FILE__ ) );
 define( 'POOPRINTS_URL',     plugin_dir_url( __FILE__ ) );
 define( 'POOPRINTS_BASENAME', plugin_basename( __FILE__ ) );
