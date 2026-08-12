@@ -17,7 +17,10 @@
     if (checked) return checked.value;
 
     var field = form.querySelector('[name="' + name + '"]');
-    return field ? field.value : '';
+    if (!field) return '';
+    if (field.type === 'radio' || field.type === 'checkbox') return '';
+
+    return field.value;
   }
 
   function updateConditionals() {
