@@ -392,7 +392,7 @@ class Shortcodes {
                         <h2>Billing Address for Property</h2>
                         <div class="pp-form-v2__grid">
                             <label class="pp-field pp-field--full">Company Name
-                                <input name="billing_company" type="text" placeholder="Enter company name">
+                                <input name="billing_company" type="text" placeholder="Enter company name if different than the property name.">
                             </label>
                             <label class="pp-field pp-field--span-8">Billing Mailing Address
                                 <input name="billing_address1" type="text" value="<?php echo esc_attr( $values['billing_address1'] ); ?>" placeholder="Enter U.S. Postal (USPS) address">
@@ -415,13 +415,13 @@ class Shortcodes {
                         <p class="pp-form-v2__hint">Who will be primarily handling PooPrints at your community?</p>
                         <div class="pp-form-v2__grid">
                             <label class="pp-field pp-field--span-6">First Name
-                                <input name="primary_first_name" type="text" placeholder="Enter first name">
+                                <input name="primary_first_name" type="text" placeholder="Enter first name" required>
                             </label>
                             <label class="pp-field pp-field--span-6">Last Name
-                                <input name="primary_last_name" type="text" placeholder="Enter last name">
+                                <input name="primary_last_name" type="text" placeholder="Enter last name" required>
                             </label>
                             <label class="pp-field pp-field--span-6">Email Address
-                                <input name="primary_email" type="email" placeholder="email@example.com">
+                                <input name="primary_email" type="email" placeholder="email@example.com" required>
                             </label>
                             <label class="pp-field pp-field--span-6">Job Title
                                 <input name="primary_job_title" type="text" placeholder="e.g. Property Manager">
@@ -430,27 +430,25 @@ class Shortcodes {
 
                         <h2 class="pp-form-v2__section-title">Billing &amp; Invoicing</h2>
                         <label class="pp-field pp-field--medium">Accounts Payable Email Address for Invoices
-                            <input name="ap_email" type="email" value="<?php echo esc_attr( $values['ap_email'] ); ?>" placeholder="email@example.com">
+                            <input name="ap_email" type="email" value="<?php echo esc_attr( $values['ap_email'] ); ?>" placeholder="email@example.com" required>
                         </label>
                         <fieldset class="pp-choice">
                             <legend>Do you currently use PetScreening?</legend>
-                            <label><input type="radio" name="petscreening" value="yes" <?php checked( $petscreening_value, 'yes' ); ?>> Yes</label>
-                            <label><input type="radio" name="petscreening" value="no" <?php checked( $petscreening_value, 'no' ); ?>> No</label>
+                            <label><input type="radio" name="petscreening" value="yes" <?php checked( $petscreening_value, 'yes' ); ?> required> Yes</label>
+                            <label><input type="radio" name="petscreening" value="no" <?php checked( $petscreening_value, 'no' ); ?> required> No</label>
                         </fieldset>
-                        <div class="pp-form-v2__conditional" data-pp-show-if="petscreening:yes">
-                            <label class="pp-field pp-field--medium">What property management system software do you use?
-                                <select name="_PropertyManagementSoftwareUsed">
-                                    <option value="">Select your property management software</option>
-                                    <?php foreach ( $software_options as $option ) : ?>
-                                        <option value="<?php echo esc_attr( $option ); ?>" <?php selected( $values['_PropertyManagementSoftwareUsed'], $option ); ?>><?php echo esc_html( $option ); ?></option>
-                                    <?php endforeach; ?>
-                                </select>
+                        <label class="pp-field pp-field--medium">What property management system software do you use?
+                            <select name="_PropertyManagementSoftwareUsed">
+                                <option value="">Select your property management software</option>
+                                <?php foreach ( $software_options as $option ) : ?>
+                                    <option value="<?php echo esc_attr( $option ); ?>" <?php selected( $values['_PropertyManagementSoftwareUsed'], $option ); ?>><?php echo esc_html( $option ); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </label>
+                        <div class="pp-form-v2__conditional" data-pp-show-if="_PropertyManagementSoftwareUsed:Other">
+                            <label class="pp-field pp-field--medium">Software Name
+                                <input name="software_other" type="text" placeholder="Enter software name">
                             </label>
-                            <div class="pp-form-v2__conditional" data-pp-show-if="_PropertyManagementSoftwareUsed:Other">
-                                <label class="pp-field pp-field--medium">Software Name
-                                    <input name="software_other" type="text" placeholder="Enter software name">
-                                </label>
-                            </div>
                         </div>
                     </section>
 

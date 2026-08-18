@@ -127,6 +127,31 @@ class Ajax {
         }
 
         if ( 2 === $step ) {
+            $required_step_2 = [
+                'primary_first_name' => 'Primary PooPrints contact first name is required.',
+                'primary_last_name'  => 'Primary PooPrints contact last name is required.',
+                'primary_email'      => 'Primary PooPrints contact email is required.',
+                'ap_email'           => 'Accounts payable email is required.',
+            ];
+
+            foreach ( $required_step_2 as $field_name => $message ) {
+                if ( '' === trim( $posted[ $field_name ] ?? '' ) ) {
+                    wp_send_json_error( [ 'message' => $message ] );
+                }
+            }
+
+            if ( ! is_email( $posted['primary_email'] ) ) {
+                wp_send_json_error( [ 'message' => 'Please enter a valid Primary PooPrints contact email.' ] );
+            }
+
+            if ( ! is_email( $posted['ap_email'] ) ) {
+                wp_send_json_error( [ 'message' => 'Please enter a valid accounts payable email.' ] );
+            }
+
+            if ( ! in_array( $posted['petscreening'] ?? '', [ 'yes', 'no' ], true ) ) {
+                wp_send_json_error( [ 'message' => 'Please select whether you currently use PetScreening.' ] );
+            }
+
             $software = $posted['_PropertyManagementSoftwareUsed'] ?? '';
             if ( 'Other' === $software && ! empty( $posted['software_other'] ) ) {
                 $posted['_PropertyManagementSoftwareUsed'] = $posted['software_other'];
