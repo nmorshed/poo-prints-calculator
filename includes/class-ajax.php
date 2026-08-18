@@ -48,19 +48,48 @@ class Ajax {
         }
 
         if ( 1 === $step ) {
-            if ( 'yes' === ( $posted['shipping_same'] ?? '' ) ) {
+            $shipping_same  = $posted['shipping_same'] ?? '';
+            $usps_receive   = $posted['usps_receive'] ?? '';
+            $delay_shipping = $posted['delay_shipping'] ?? '';
+
+            if ( ! in_array( $shipping_same, [ 'yes', 'no' ], true ) ) {
+                wp_send_json_error( [ 'message' => 'Please select whether the property address is the shipping address.' ] );
+            }
+
+            if ( ! in_array( $usps_receive, [ 'yes', 'no' ], true ) ) {
+                wp_send_json_error( [ 'message' => 'Please select whether the property address can receive USPS packages.' ] );
+            }
+
+            if ( ! in_array( $delay_shipping, [ 'yes', 'no' ], true ) ) {
+                wp_send_json_error( [ 'message' => 'Please select whether to delay the shipment.' ] );
+            }
+
+            if ( 'yes' === $shipping_same ) {
                 $posted['StreetAddress1']  = $posted['Address3Street1'] ?? '';
                 $posted['StreetAddress2']  = $posted['Address3Street2'] ?? '';
                 $posted['City']            = $posted['City3'] ?? '';
                 $posted['State']           = $posted['State3'] ?? '';
                 $posted['PostalCode']      = $posted['PostalCode3'] ?? '';
-            } elseif ( 'no' === ( $posted['shipping_same'] ?? '' ) ) {
+            } elseif ( 'no' === $shipping_same ) {
                 $posted['StreetAddress1'] = $posted['shipping_address1'] ?? '';
                 $posted['StreetAddress2'] = $posted['shipping_address2'] ?? '';
                 $posted['City']           = $posted['shipping_city'] ?? '';
                 $posted['State']          = $posted['shipping_state'] ?? '';
                 $posted['PostalCode']     = $posted['shipping_zip'] ?? '';
             }
+
+            $step_1_tags = [
+                $tags[ 'shipping_same_' . $shipping_same ] ?? 0,
+                $tags[ 'delay_' . $delay_shipping ] ?? 0,
+            ];
+
+            if ( 'yes' === $shipping_same ) {
+                $step_1_tags[] = $tags[ 'usps_property_' . $usps_receive ] ?? 0;
+            } else {
+                $step_1_tags[] = $tags[ 'usps_shipping_' . $usps_receive ] ?? 0;
+            }
+
+            self::apply_form_v2_tags( $step_1_tags );
 
             self::save_form_v2_direct_fields( $posted, [
                 'Company',

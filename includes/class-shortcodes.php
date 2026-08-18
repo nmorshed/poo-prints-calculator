@@ -186,6 +186,14 @@ class Shortcodes {
             'step_4'            => 14874,
             'petscreening_yes'  => 14808,
             'petscreening_no'   => 14810,
+            'shipping_same_yes' => 14729,
+            'shipping_same_no'  => 14802,
+            'usps_property_yes' => 14812,
+            'usps_property_no'  => 14814,
+            'usps_shipping_yes' => 14731,
+            'usps_shipping_no'  => 14804,
+            'delay_yes'         => 14733,
+            'delay_no'          => 14806,
         ];
     }
 
@@ -313,8 +321,8 @@ class Shortcodes {
                         <h3>Shipping Details</h3>
                         <fieldset class="pp-choice">
                             <legend>Is the property's address the shipping address?</legend>
-                            <label><input type="radio" name="shipping_same" value="yes" checked> Yes</label>
-                            <label><input type="radio" name="shipping_same" value="no"> No</label>
+                            <label><input type="radio" name="shipping_same" value="yes" required> Yes</label>
+                            <label><input type="radio" name="shipping_same" value="no" required> No</label>
                         </fieldset>
                         <div class="pp-form-v2__conditional" data-pp-show-if="shipping_same:no">
                             <div class="pp-form-v2__grid">
@@ -341,8 +349,8 @@ class Shortcodes {
 
                         <fieldset class="pp-choice">
                             <legend>Can your property address receive USPS packages?</legend>
-                            <label><input type="radio" name="usps_receive" value="yes" checked> Yes</label>
-                            <label><input type="radio" name="usps_receive" value="no"> No</label>
+                            <label><input type="radio" name="usps_receive" value="yes" required> Yes</label>
+                            <label><input type="radio" name="usps_receive" value="no" required> No</label>
                         </fieldset>
                         <div class="pp-form-v2__conditional" data-pp-show-if="usps_receive:no">
                             <h3>Temporary Shipping Address</h3>
@@ -370,8 +378,8 @@ class Shortcodes {
 
                         <fieldset class="pp-choice">
                             <legend>Do you want us to delay the shipment?</legend>
-                            <label><input type="radio" name="delay_shipping" value="yes"> Yes</label>
-                            <label><input type="radio" name="delay_shipping" value="no" checked> No</label>
+                            <label><input type="radio" name="delay_shipping" value="yes" required> Yes</label>
+                            <label><input type="radio" name="delay_shipping" value="no" required> No</label>
                         </fieldset>
                         <div class="pp-form-v2__conditional" data-pp-show-if="delay_shipping:yes">
                             <label class="pp-field pp-field--date">If yes, what date do you want the shipment to arrive?
