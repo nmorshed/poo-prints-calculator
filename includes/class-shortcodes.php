@@ -147,7 +147,7 @@ class Shortcodes {
      * PooPrints Form v2: tag the current contact based on whether their WP email is disposable.
      */
     public static function render_disposable_email_check() {
-        if ( ! is_user_logged_in() || ! function_exists( 'memb_setTags' ) ) {
+        if ( ! is_user_logged_in() ) {
             return '';
         }
 
@@ -164,9 +164,9 @@ class Shortcodes {
         $tag_id        = $is_disposable ? 10958 : 14958;
         $remove_tag_id = $is_disposable ? 14958 : 10958;
 
-        memb_setTags( $tag_id . ',-' . $remove_tag_id );
+        do_shortcode("[memb_add_tag tag_id={$tag_id},-{$remove_tag_id}]");
 
-        return '';
+        return "";
     }
 
     /**
@@ -549,7 +549,7 @@ class Shortcodes {
                             <label><input type="radio" name="petscreening" value="no" <?php checked( $petscreening_value, 'no' ); ?> required> No</label>
                         </fieldset>
                         <label class="pp-field pp-field--medium">What property management system software do you use?
-                            <select name="_PropertyManagementSoftwareUsed" data-pp-required-if="petscreening:yes">
+                            <select name="_PropertyManagementSoftwareUsed" required>
                                 <option value="">Select your property management software</option>
                                 <?php foreach ( $software_options as $option ) : ?>
                                     <option value="<?php echo esc_attr( $option ); ?>" <?php selected( $values['_PropertyManagementSoftwareUsed'], $option ); ?>><?php echo esc_html( $option ); ?></option>

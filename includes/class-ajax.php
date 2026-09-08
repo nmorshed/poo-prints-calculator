@@ -137,6 +137,7 @@ class Ajax {
                 'primary_email'      => 'Primary PooPrints contact email is required.',
                 'primary_job_title'  => 'Primary PooPrints contact job title is required.',
                 'ap_email'           => 'Accounts payable email is required.',
+                '_PropertyManagementSoftwareUsed' => 'Property management system software is required.',
             ];
 
             self::validate_form_v2_required_fields( $posted, $required_step_2 );
@@ -151,10 +152,6 @@ class Ajax {
 
             if ( ! in_array( $posted['petscreening'] ?? '', [ 'yes', 'no' ], true ) ) {
                 wp_send_json_error( [ 'message' => 'Please select whether you currently use PetScreening.' ] );
-            }
-
-            if ( 'yes' === ( $posted['petscreening'] ?? '' ) && '' === trim( $posted['_PropertyManagementSoftwareUsed'] ?? '' ) ) {
-                wp_send_json_error( [ 'message' => 'Please select the property management system software.' ] );
             }
 
             $software = $posted['_PropertyManagementSoftwareUsed'] ?? '';
