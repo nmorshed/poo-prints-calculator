@@ -64,6 +64,10 @@ class Ajax {
                 wp_send_json_error( [ 'message' => 'Please select whether to delay the shipment.' ] );
             }
 
+            if ( 'yes' === $delay_shipping && '' === trim( $posted['delay_date'] ?? '' ) ) {
+                wp_send_json_error( [ 'message' => 'Please select the requested shipment arrival date.' ] );
+            }
+
             if ( 'yes' === $shipping_same ) {
                 $posted['StreetAddress1']  = $posted['Address3Street1'] ?? '';
                 $posted['StreetAddress2']  = $posted['Address3Street2'] ?? '';
@@ -131,14 +135,11 @@ class Ajax {
                 'primary_first_name' => 'Primary PooPrints contact first name is required.',
                 'primary_last_name'  => 'Primary PooPrints contact last name is required.',
                 'primary_email'      => 'Primary PooPrints contact email is required.',
+                'primary_job_title'  => 'Primary PooPrints contact job title is required.',
                 'ap_email'           => 'Accounts payable email is required.',
             ];
 
-            foreach ( $required_step_2 as $field_name => $message ) {
-                if ( '' === trim( $posted[ $field_name ] ?? '' ) ) {
-                    wp_send_json_error( [ 'message' => $message ] );
-                }
-            }
+            self::validate_form_v2_required_fields( $posted, $required_step_2 );
 
             if ( ! is_email( $posted['primary_email'] ) ) {
                 wp_send_json_error( [ 'message' => 'Please enter a valid Primary PooPrints contact email.' ] );
@@ -150,6 +151,10 @@ class Ajax {
 
             if ( ! in_array( $posted['petscreening'] ?? '', [ 'yes', 'no' ], true ) ) {
                 wp_send_json_error( [ 'message' => 'Please select whether you currently use PetScreening.' ] );
+            }
+
+            if ( 'yes' === ( $posted['petscreening'] ?? '' ) && '' === trim( $posted['_PropertyManagementSoftwareUsed'] ?? '' ) ) {
+                wp_send_json_error( [ 'message' => 'Please select the property management system software.' ] );
             }
 
             $software = $posted['_PropertyManagementSoftwareUsed'] ?? '';
@@ -190,6 +195,55 @@ class Ajax {
         }
 
         if ( 3 === $step ) {
+            $has_management_company = $posted['has_management_company'] ?? '';
+            if ( ! in_array( $has_management_company, [ 'yes', 'no' ], true ) ) {
+                wp_send_json_error( [ 'message' => 'Please select whether there is a management company.' ] );
+            }
+
+            if ( 'yes' === $has_management_company ) {
+                self::validate_form_v2_required_fields( $posted, [
+                    'management_company_name'      => 'Management company name is required.',
+                    'management_address1'          => 'Management company USPS address is required.',
+                    'management_city'              => 'Management company city is required.',
+                    'management_state'             => 'Management company state is required.',
+                    'management_zip'               => 'Management company zip code is required.',
+                    'community_manager_first_name' => 'Community manager first name is required.',
+                    'community_manager_last_name'  => 'Community manager last name is required.',
+                    'community_manager_email'      => 'Community manager email is required.',
+                    'community_manager_job_title'  => 'Community manager job title is required.',
+                ] );
+                self::validate_form_v2_email_field( $posted, 'community_manager_email', 'Please enter a valid community manager email.' );
+            } else {
+                $property_type = '';
+                if ( function_exists( 'memb_getContactField' ) ) {
+                    $property_type = strtolower( trim( (string) memb_getContactField( '_KindofPropertyQuoteFor' ) ) );
+                }
+
+                if ( 'rental' === $property_type ) {
+                    self::validate_form_v2_required_fields( $posted, [
+                        'community_manager_first_name' => 'Community manager first name is required.',
+                        'community_manager_last_name'  => 'Community manager last name is required.',
+                        'community_manager_email'      => 'Community manager email is required.',
+                        'community_manager_job_title'  => 'Community manager job title is required.',
+                        'owner_first_name'             => 'Property owner first name is required.',
+                        'owner_last_name'              => 'Property owner last name is required.',
+                        'owner_email'                  => 'Property owner email is required.',
+                        'owner_phone'                  => 'Property owner phone number is required.',
+                    ] );
+                    self::validate_form_v2_email_field( $posted, 'community_manager_email', 'Please enter a valid community manager email.' );
+                    self::validate_form_v2_email_field( $posted, 'owner_email', 'Please enter a valid property owner email.' );
+                } else {
+                    self::validate_form_v2_required_array_rows( $posted, [
+                        'hoa_first_name' => 'HOA contact first name',
+                        'hoa_last_name'  => 'HOA contact last name',
+                        'hoa_email'      => 'HOA contact email',
+                        'hoa_role'       => 'HOA contact role',
+                        'hoa_on_board'   => 'HOA contact association board answer',
+                    ] );
+                    self::validate_form_v2_email_array_field( $posted, 'hoa_email', 'Please enter a valid HOA contact email.' );
+                }
+            }
+
             self::append_form_v2_notes( 'Organization & Submit', $posted, [
                 'has_management_company'          => 'Has management company',
                 'management_company_name'         => 'Management company name',
@@ -256,6 +310,47 @@ class Ajax {
                 continue;
             }
             memb_setContactField( $direct_fields[ $key ], $posted[ $key ] );
+        }
+    }
+
+    private static function validate_form_v2_required_fields( $posted, $fields ) {
+        foreach ( $fields as $field_name => $message ) {
+            if ( '' === trim( (string) ( $posted[ $field_name ] ?? '' ) ) ) {
+                wp_send_json_error( [ 'message' => $message ] );
+            }
+        }
+    }
+
+    private static function validate_form_v2_email_field( $posted, $field_name, $message ) {
+        if ( ! is_email( $posted[ $field_name ] ?? '' ) ) {
+            wp_send_json_error( [ 'message' => $message ] );
+        }
+    }
+
+    private static function validate_form_v2_required_array_rows( $posted, $fields ) {
+        $row_count = 0;
+        foreach ( array_keys( $fields ) as $field_name ) {
+            $values    = isset( $posted[ $field_name ] ) && is_array( $posted[ $field_name ] ) ? $posted[ $field_name ] : [];
+            $row_count = max( $row_count, count( $values ) );
+        }
+
+        $row_count = max( 1, $row_count );
+        for ( $i = 0; $i < $row_count; $i++ ) {
+            foreach ( $fields as $field_name => $label ) {
+                $value = $posted[ $field_name ][ $i ] ?? '';
+                if ( '' === trim( (string) $value ) ) {
+                    wp_send_json_error( [ 'message' => sprintf( '%s is required.', $label ) ] );
+                }
+            }
+        }
+    }
+
+    private static function validate_form_v2_email_array_field( $posted, $field_name, $message ) {
+        $values = isset( $posted[ $field_name ] ) && is_array( $posted[ $field_name ] ) ? $posted[ $field_name ] : [];
+        foreach ( $values as $value ) {
+            if ( ! is_email( $value ) ) {
+                wp_send_json_error( [ 'message' => $message ] );
+            }
         }
     }
 

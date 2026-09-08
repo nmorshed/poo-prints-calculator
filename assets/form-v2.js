@@ -51,6 +51,16 @@
         input.disabled = !isVisible;
       });
     });
+
+    updateRequiredFields();
+  }
+
+  function updateRequiredFields() {
+    root.querySelectorAll('[data-pp-required-if]').forEach(function (field) {
+      var rule = field.getAttribute('data-pp-required-if') || '';
+      var parts = rule.split(':');
+      field.required = parts.length === 2 && fieldValue(parts[0]) === parts[1] && !field.disabled;
+    });
   }
 
   function showNotice(message, type) {

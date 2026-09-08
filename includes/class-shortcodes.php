@@ -140,6 +140,117 @@ class Shortcodes {
         add_shortcode( 'pooprints_gs_close',      [ __CLASS__, 'render_gs_close' ] );
         add_shortcode( 'pooprints_fine_tables',   [ __CLASS__, 'render_fine_tables' ] );
         add_shortcode( 'pooprints_form_v2',        [ __CLASS__, 'render_form_v2' ] );
+        add_shortcode( 'pooprints_disposable_email_check', [ __CLASS__, 'render_disposable_email_check' ] );
+    }
+
+    /**
+     * PooPrints Form v2: tag the current contact based on whether their WP email is disposable.
+     */
+    public static function render_disposable_email_check() {
+        if ( ! is_user_logged_in() || ! function_exists( 'memb_setTags' ) ) {
+            return '';
+        }
+
+        $user = wp_get_current_user();
+        if ( empty( $user->user_email ) || ! is_email( $user->user_email ) ) {
+            return '';
+        }
+
+        $is_disposable = self::is_disposable_email( $user->user_email );
+        if ( null === $is_disposable ) {
+            return '';
+        }
+
+        $tag_id        = $is_disposable ? 10958 : 14958;
+        $remove_tag_id = $is_disposable ? 14958 : 10958;
+
+        memb_setTags( $tag_id . ',-' . $remove_tag_id );
+
+        return '';
+    }
+
+    /**
+     * PooPrints Form v2: GitHub-backed disposable-domain check.
+     */
+    private static function is_disposable_email( $email ) {
+        $domain = strtolower( substr( strrchr( $email, '@' ), 1 ) );
+        if ( '' === $domain ) {
+            return false;
+        }
+
+        $disposable_domains = self::get_disposable_email_domains();
+        if ( null === $disposable_domains ) {
+            return null;
+        }
+
+        if ( in_array( $domain, $disposable_domains, true ) ) {
+            return true;
+        }
+
+        foreach ( $disposable_domains as $disposable_domain ) {
+            $suffix = '.' . $disposable_domain;
+            if ( $disposable_domain && substr( $domain, -strlen( $suffix ) ) === $suffix ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * PooPrints Form v2: fetch and cache disposable domains from GitHub.
+     */
+    private static function get_disposable_email_domains() {
+        static $domains = null;
+        if ( null !== $domains ) {
+            return $domains;
+        }
+
+        $transient_key = 'pooprints_disposable_email_domains';
+        $cached        = get_transient( $transient_key );
+        if ( is_array( $cached ) ) {
+            $domains = $cached;
+            return $domains;
+        }
+
+        $url = apply_filters(
+            'pooprints_disposable_email_domains_url',
+            'https://raw.githubusercontent.com/disposable/disposable-email-domains/master/domains.txt'
+        );
+
+        $response = wp_remote_get( $url, [
+            'timeout'     => 8,
+            'redirection' => 3,
+        ] );
+
+        if ( is_wp_error( $response ) ) {
+            error_log( 'PooPrints disposable email domain fetch failed: ' . $response->get_error_message() );
+            return null;
+        }
+
+        $status_code = wp_remote_retrieve_response_code( $response );
+        $body        = wp_remote_retrieve_body( $response );
+        if ( 200 !== $status_code || '' === trim( $body ) ) {
+            error_log( 'PooPrints disposable email domain fetch failed with status: ' . $status_code );
+            return null;
+        }
+
+        $domains = array_values( array_unique( array_filter( array_map(
+            static function ( $line ) {
+                $domain = strtolower( trim( $line ) );
+                return preg_match( '/^[a-z0-9.-]+\.[a-z]{2,}$/', $domain ) ? $domain : '';
+            },
+            preg_split( '/\R/', $body )
+        ) ) ) );
+
+        if ( empty( $domains ) ) {
+            error_log( 'PooPrints disposable email domain fetch returned no valid domains.' );
+            return null;
+        }
+
+        set_transient( $transient_key, $domains, DAY_IN_SECONDS );
+
+        return $domains;
     }
 
     /**
@@ -383,7 +494,7 @@ class Shortcodes {
                         </fieldset>
                         <div class="pp-form-v2__conditional" data-pp-show-if="delay_shipping:yes">
                             <label class="pp-field pp-field--date">If yes, what date do you want the shipment to arrive?
-                                <input name="delay_date" type="date">
+                                <input name="delay_date" type="date" required>
                             </label>
                         </div>
                     </section>
@@ -424,7 +535,7 @@ class Shortcodes {
                                 <input name="primary_email" type="email" placeholder="email@example.com" required>
                             </label>
                             <label class="pp-field pp-field--span-6">Job Title
-                                <input name="primary_job_title" type="text" placeholder="e.g. Property Manager">
+                                <input name="primary_job_title" type="text" placeholder="e.g. Property Manager" required>
                             </label>
                         </div>
 
@@ -438,7 +549,7 @@ class Shortcodes {
                             <label><input type="radio" name="petscreening" value="no" <?php checked( $petscreening_value, 'no' ); ?> required> No</label>
                         </fieldset>
                         <label class="pp-field pp-field--medium">What property management system software do you use?
-                            <select name="_PropertyManagementSoftwareUsed">
+                            <select name="_PropertyManagementSoftwareUsed" data-pp-required-if="petscreening:yes">
                                 <option value="">Select your property management software</option>
                                 <?php foreach ( $software_options as $option ) : ?>
                                     <option value="<?php echo esc_attr( $option ); ?>" <?php selected( $values['_PropertyManagementSoftwareUsed'], $option ); ?>><?php echo esc_html( $option ); ?></option>
@@ -456,45 +567,45 @@ class Shortcodes {
                         <h2>Organization &amp; Submit</h2>
                         <fieldset class="pp-choice">
                             <legend>Is there a management company?</legend>
-                            <label><input type="radio" name="has_management_company" value="yes"> Yes</label>
-                            <label><input type="radio" name="has_management_company" value="no"> No</label>
+                            <label><input type="radio" name="has_management_company" value="yes" required> Yes</label>
+                            <label><input type="radio" name="has_management_company" value="no" required> No</label>
                         </fieldset>
 
                         <div class="pp-form-v2__conditional" data-pp-show-if="has_management_company:yes">
                             <h3>Management Company</h3>
                             <div class="pp-form-v2__grid">
                                 <label class="pp-field pp-field--full">Management Company Name
-                                    <input name="management_company_name" type="text" placeholder="Enter management company name">
+                                    <input name="management_company_name" type="text" placeholder="Enter management company name" required>
                                 </label>
                                 <label class="pp-field pp-field--span-8">USPS Address
-                                    <input name="management_address1" type="text" placeholder="Enter U.S. Postal (USPS) address">
+                                    <input name="management_address1" type="text" placeholder="Enter U.S. Postal (USPS) address" required>
                                 </label>
                                 <label class="pp-field pp-field--span-4">Unit or Suite #
                                     <input name="management_address2" type="text" placeholder="Unit or Suite #">
                                 </label>
                                 <label class="pp-field pp-field--span-6">City
-                                    <input name="management_city" type="text" placeholder="Enter city">
+                                    <input name="management_city" type="text" placeholder="Enter city" required>
                                 </label>
                                 <label class="pp-field pp-field--span-3">State
-                                    <input name="management_state" type="text" placeholder="State">
+                                    <input name="management_state" type="text" placeholder="State" required>
                                 </label>
                                 <label class="pp-field pp-field--span-3">Zip Code
-                                    <input name="management_zip" type="text" placeholder="Zip code">
+                                    <input name="management_zip" type="text" placeholder="Zip code" required>
                                 </label>
                             </div>
                             <h3>Community Manager</h3>
                             <div class="pp-form-v2__grid">
                                 <label class="pp-field pp-field--span-6">Community Manager First Name
-                                    <input name="community_manager_first_name" type="text" placeholder="First name">
+                                    <input name="community_manager_first_name" type="text" placeholder="First name" required>
                                 </label>
                                 <label class="pp-field pp-field--span-6">Community Manager Last Name
-                                    <input name="community_manager_last_name" type="text" placeholder="Last name">
+                                    <input name="community_manager_last_name" type="text" placeholder="Last name" required>
                                 </label>
                                 <label class="pp-field pp-field--span-6">Community Manager Email
-                                    <input name="community_manager_email" type="email" placeholder="email@example.com">
+                                    <input name="community_manager_email" type="email" placeholder="email@example.com" required>
                                 </label>
                                 <label class="pp-field pp-field--span-6">Job Title
-                                    <input name="community_manager_job_title" type="text" placeholder="e.g. Community Manager">
+                                    <input name="community_manager_job_title" type="text" placeholder="e.g. Community Manager" required>
                                 </label>
                                 <label class="pp-field pp-field--span-6">Regional/Asset Manager First Name
                                     <input name="regional_manager_first_name" type="text" placeholder="First name">
@@ -512,19 +623,35 @@ class Shortcodes {
                         </div>
 
                         <div class="pp-form-v2__conditional" data-pp-step3-branch="rental">
+                        <h3>Community Manager</h3>
+                            <div class="pp-form-v2__grid">
+                                <label class="pp-field pp-field--span-6">Community Manager First Name
+                                    <input name="community_manager_first_name" type="text" placeholder="First name" required>
+                                </label>
+                                <label class="pp-field pp-field--span-6">Community Manager Last Name
+                                    <input name="community_manager_last_name" type="text" placeholder="Last name" required>
+                                </label>
+                                <label class="pp-field pp-field--span-6">Community Manager Email
+                                    <input name="community_manager_email" type="email" placeholder="email@example.com" required>
+                                </label>
+                                <label class="pp-field pp-field--span-6">Job Title
+                                    <input name="community_manager_job_title" type="text" placeholder="e.g. Community Manager" required>
+                                </label>
+                            </div>
+                            
                             <h3>Property Owner</h3>
                             <div class="pp-form-v2__grid">
                                 <label class="pp-field pp-field--span-6">Owner First Name
-                                    <input name="owner_first_name" type="text" placeholder="First name">
+                                    <input name="owner_first_name" type="text" placeholder="First name" required>
                                 </label>
                                 <label class="pp-field pp-field--span-6">Owner Last Name
-                                    <input name="owner_last_name" type="text" placeholder="Last name">
+                                    <input name="owner_last_name" type="text" placeholder="Last name" required>
                                 </label>
                                 <label class="pp-field pp-field--span-6">Owner Email
-                                    <input name="owner_email" type="email" placeholder="email@example.com">
+                                    <input name="owner_email" type="email" placeholder="email@example.com" required>
                                 </label>
                                 <label class="pp-field pp-field--span-6">Phone Number
-                                    <input name="owner_phone" type="tel" placeholder="(555) 555-5555">
+                                    <input name="owner_phone" type="tel" placeholder="(555) 555-5555" required>
                                 </label>
                                 <label class="pp-field pp-field--full">Company Name
                                     <input name="owner_company_name" type="text" placeholder="If no company name, leave blank">
@@ -537,21 +664,21 @@ class Shortcodes {
                             <div class="pp-form-v2__repeat" data-pp-hoa-list>
                                 <div class="pp-form-v2__grid pp-form-v2__repeat-item">
                                     <label class="pp-field pp-field--span-6">First Name
-                                        <input name="hoa_first_name[]" type="text" placeholder="First name">
+                                        <input name="hoa_first_name[]" type="text" placeholder="First name" required>
                                     </label>
                                     <label class="pp-field pp-field--span-6">Last Name
-                                        <input name="hoa_last_name[]" type="text" placeholder="Last name">
+                                        <input name="hoa_last_name[]" type="text" placeholder="Last name" required>
                                     </label>
                                     <label class="pp-field pp-field--span-6">Email
-                                        <input name="hoa_email[]" type="email" placeholder="email@example.com">
+                                        <input name="hoa_email[]" type="email" placeholder="email@example.com" required>
                                     </label>
                                     <label class="pp-field pp-field--span-6">Role in the Association
-                                        <input name="hoa_role[]" type="text" placeholder="Role in the association">
+                                        <input name="hoa_role[]" type="text" placeholder="Role in the association" required>
                                     </label>
                                     <fieldset class="pp-choice pp-field--full">
                                         <legend>Are you on the association board?</legend>
-                                        <label><input type="radio" name="hoa_on_board[0]" value="yes"> Yes</label>
-                                        <label><input type="radio" name="hoa_on_board[0]" value="no"> No</label>
+                                        <label><input type="radio" name="hoa_on_board[0]" value="yes" required> Yes</label>
+                                        <label><input type="radio" name="hoa_on_board[0]" value="no" required> No</label>
                                     </fieldset>
                                 </div>
                             </div>
@@ -564,7 +691,7 @@ class Shortcodes {
                         <h2>Thank you!</h2>
                         <p>Once your order is processed (usually the same business day), we'll email you tracking details, your invoice, and next steps.</p>
                         <hr>
-                        <p>To make sure our emails reach your inbox, click the link below to add us to your contacts.</p>
+                        <p>To make sure our emails reach your inbox, click the "Add to Contacts" button below to add us to your contacts.</p>
                         <a class="pp-form-v2__outline" href="https://s3.amazonaws.com/NoVacancy/users/Nick%2BT%2BBoosalis%2BPooPrints%2Bby%2BNo%2BVacancy.vcf">Add to Contacts</a>
                         <a class="pp-form-v2__home" href="<?php echo esc_url( home_url( '/' ) ); ?>">Return to Home</a>
                     </section>
