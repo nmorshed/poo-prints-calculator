@@ -301,7 +301,7 @@ class Ajax {
             self::validate_form_v2_required_fields( $posted, [
                 'JobTitle'              => 'Job title is required.',
                 '_OwnerManager'         => 'Management company name is required.',
-                '_StreetAddress1'       => 'Street address is required.',
+                'StreetAddress1'        => 'Street address is required.',
                 'StreetAddress2'        => 'Address line 2 is required.',
                 'City'                  => 'City is required.',
                 'State'                 => 'State is required.',
@@ -312,7 +312,7 @@ class Ajax {
             self::save_quote_present_fields( $posted, [
                 'JobTitle',
                 '_OwnerManager',
-                '_StreetAddress1',
+                'StreetAddress1',
                 'StreetAddress2',
                 'City',
                 'State',

@@ -218,7 +218,7 @@
 
   function setLoading(isLoading) {
     if (loading) loading.hidden = !isLoading;
-    Array.prototype.slice.call(form.querySelectorAll('input, select, textarea, button')).forEach(function (field) {
+    Array.prototype.slice.call(form.querySelectorAll('button')).forEach(function (field) {
       field.disabled = isLoading;
     });
   }
@@ -286,7 +286,11 @@
     panels.forEach(function (panel) {
       panel.classList.remove('is-active');
     });
-    root.querySelector('.pp-quote-present__steps').hidden = true;
+    dots.forEach(function (dot) {
+      dot.classList.remove('is-active');
+      dot.classList.add('is-complete');
+      dot.querySelector('span').textContent = '\u2713';
+    });
     if (message) message.hidden = false;
     if (heroKicker) heroKicker.textContent = 'Quote request received';
     if (heroTitle) heroTitle.textContent = "Thanks \u2014 we'll be in touch.";

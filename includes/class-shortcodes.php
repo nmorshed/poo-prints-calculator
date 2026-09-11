@@ -150,7 +150,7 @@ class Shortcodes {
         return [
             'JobTitle'                    => 'JobTitle',
             '_OwnerManager'               => '_OwnerManager',
-            '_StreetAddress1'             => '_StreetAddress1',
+            'StreetAddress1'              => 'StreetAddress1',
             'StreetAddress2'              => 'StreetAddress2',
             'City'                        => 'City',
             'State'                       => 'State',
@@ -200,8 +200,8 @@ class Shortcodes {
                 'ymail.com',
                 'zoho.com',
             ],
-            'approved_domains_sheet' => 'https://docs.google.com/spreadsheets/d/1KBuTFyWLf1LfV9-ZTrFpDwqq6d7uu_SS/export?format=csv&gid=0',
-            'zip_codes_sheet'        => 'https://docs.google.com/spreadsheets/d/1O4oB_WtZx8SxjUZalM1BfX6ipgq9To94/export?format=csv&gid=0',
+            'approved_domains_sheet' => 'https://docs.google.com/spreadsheets/d/1KBuTFyWLf1LfV9-ZTrFpDwqq6d7uu_SS/gviz/tq?tqx=out:csv&gid=0',
+            'zip_codes_sheet'        => 'https://docs.google.com/spreadsheets/d/1O4oB_WtZx8SxjUZalM1BfX6ipgq9To94/gviz/tq?tqx=out:csv&gid=0',
             'redirects' => [
                 'rental_tiered' => '/quote-rental-tiered',
                 'hoa_tiered'    => '/quote-hoa-tiered',
@@ -218,6 +218,13 @@ class Shortcodes {
         self::$enqueue_form_v2 = true;
 
         $quote_options = self::quote_present_config()['quote_type_options'];
+        $values        = array_fill_keys( array_keys( self::quote_present_field_map() ), '' );
+        if ( function_exists( 'memb_getContactField' ) ) {
+            foreach ( self::quote_present_field_map() as $input_name => $field_name ) {
+                $value = memb_getContactField( $field_name );
+                $values[ $input_name ] = is_scalar( $value ) ? (string) $value : '';
+            }
+        }
 
         ob_start();
         ?>
@@ -240,32 +247,32 @@ class Shortcodes {
                     <p class="pp-quote-present__intro">A few details about the location so we can build your custom quote.</p>
                     <div class="pp-quote-present__grid">
                         <label class="pp-field pp-field--span-6">Job Title *
-                            <input name="JobTitle" type="text" placeholder="Property Manager, Owner, etc." required>
+                            <input name="JobTitle" type="text" value="<?php echo esc_attr( $values['JobTitle'] ); ?>" placeholder="Property Manager, Owner, etc." required>
                         </label>
                         <label class="pp-field pp-field--span-6">Management Co Name *
-                            <input name="_OwnerManager" type="text" placeholder="Enter management company name" required>
+                            <input name="_OwnerManager" type="text" value="<?php echo esc_attr( $values['_OwnerManager'] ); ?>" placeholder="Enter management company name" required>
                         </label>
                         <label class="pp-field pp-field--full">Street Address *
-                            <input name="_StreetAddress1" type="text" placeholder="Street address" required>
+                            <input name="StreetAddress1" type="text" value="<?php echo esc_attr( $values['StreetAddress1'] ); ?>" placeholder="Street address" required>
                         </label>
                         <label class="pp-field pp-field--full">Address Line 2 *
-                            <input name="StreetAddress2" type="text" placeholder="Suite, Unit #, Leasing Office or ATTN:" required>
+                            <input name="StreetAddress2" type="text" value="<?php echo esc_attr( $values['StreetAddress2'] ); ?>" placeholder="Suite, Unit #, Leasing Office or ATTN:" required>
                         </label>
                         <label class="pp-field pp-field--span-6">City *
-                            <input name="City" type="text" placeholder="City" required>
+                            <input name="City" type="text" value="<?php echo esc_attr( $values['City'] ); ?>" placeholder="City" required>
                         </label>
                         <label class="pp-field pp-field--span-3">State *
-                            <input name="State" type="text" placeholder="State" required>
+                            <input name="State" type="text" value="<?php echo esc_attr( $values['State'] ); ?>" placeholder="State" required>
                         </label>
                         <label class="pp-field pp-field--span-3">Postal Code *
-                            <input name="PostalCode" type="text" inputmode="numeric" placeholder="ZIP" required>
+                            <input name="PostalCode" type="text" value="<?php echo esc_attr( $values['PostalCode'] ); ?>" inputmode="numeric" placeholder="ZIP" required>
                         </label>
                         <label class="pp-field pp-field--full">How Did You Hear About Us? *
-                            <textarea name="_HowDidYouHearAboutUs" rows="4" placeholder="Referral, search, conference, etc." required></textarea>
+                            <textarea name="_HowDidYouHearAboutUs" rows="4" placeholder="Referral, search, conference, etc." required><?php echo esc_textarea( $values['_HowDidYouHearAboutUs'] ); ?></textarea>
                         </label>
                     </div>
                     <button type="button" class="pp-quote-present__button" data-pp-quote-next>Continue</button>
-                    <p class="pp-quote-present__secure">Your information is secure</p>
+                    <p class="pp-quote-present__secure"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Your information is secure</p>
                 </section>
 
                 <section class="pp-quote-present__card" data-pp-quote-step="3">
@@ -275,25 +282,25 @@ class Shortcodes {
                             <select name="_KindofPropertyQuoteFor" required>
                                 <option value="">Please select one</option>
                                 <?php foreach ( $quote_options as $option ) : ?>
-                                    <option value="<?php echo esc_attr( $option ); ?>"><?php echo esc_html( $option ); ?></option>
+                                    <option value="<?php echo esc_attr( $option ); ?>" <?php selected( $values['_KindofPropertyQuoteFor'], $option ); ?>><?php echo esc_html( $option ); ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </label>
                         <label class="pp-field pp-field--span-6">Estimated # of Dogs *
-                            <input name="_ofDogs" type="number" min="1" step="1" required>
+                            <input name="_ofDogs" type="number" value="<?php echo esc_attr( $values['_ofDogs'] ); ?>" min="1" step="1" required>
                         </label>
                         <label class="pp-field pp-field--span-6"># of Units *
-                            <input name="_ofUnits" type="number" min="1" step="1" required>
+                            <input name="_ofUnits" type="number" value="<?php echo esc_attr( $values['_ofUnits'] ); ?>" min="1" step="1" required>
                         </label>
                         <label class="pp-field pp-field--full">How Many Properties is the # of Dogs For? *
-                            <input name="_QuoteforHowManyProperties" type="number" min="1" step="1" required>
+                            <input name="_QuoteforHowManyProperties" type="number" value="<?php echo esc_attr( $values['_QuoteforHowManyProperties'] ); ?>" min="1" step="1" required>
                         </label>
                         <label class="pp-field pp-field--full">Comments *
-                            <textarea name="_QuoteComments" rows="5" required></textarea>
+                            <textarea name="_QuoteComments" rows="5" required><?php echo esc_textarea( $values['_QuoteComments'] ); ?></textarea>
                         </label>
                     </div>
                     <button type="button" class="pp-quote-present__button" data-pp-quote-submit>Request My Free Quote</button>
-                    <p class="pp-quote-present__secure">Your information is secure</p>
+                    <p class="pp-quote-present__secure"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Your information is secure</p>
                 </section>
 
                 <section class="pp-quote-present__message" data-pp-quote-message hidden>
