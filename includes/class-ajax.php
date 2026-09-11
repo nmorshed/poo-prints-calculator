@@ -10,6 +10,8 @@ class Ajax {
         // add_action( 'wp_ajax_pooprints_update_units', [ __CLASS__, 'update_units' ] );
         add_action( 'wp_ajax_pooprints_form_v2_submit', [ __CLASS__, 'submit_form_v2' ] );
         add_action( 'wp_ajax_nopriv_pooprints_form_v2_submit', [ __CLASS__, 'submit_form_v2' ] );
+        add_action( 'wp_ajax_which_quote_to_present_submit', [ __CLASS__, 'submit_which_quote_to_present' ] );
+        add_action( 'wp_ajax_nopriv_which_quote_to_present_submit', [ __CLASS__, 'submit_which_quote_to_present' ] );
     }
 
     public static function update_units() {
@@ -276,6 +278,103 @@ class Ajax {
         ] );
     }
 
+    /**
+     * PooPrints Form v2: save and route the [which_quote_to_present] form.
+     */
+    public static function submit_which_quote_to_present() {
+        check_ajax_referer( 'which_quote_to_present', 'nonce' );
+
+        if ( ! function_exists( 'memb_setContactField' ) ) {
+            wp_send_json_error( [ 'message' => 'Memberium not active.' ] );
+        }
+
+        $step = absint( $_POST['step'] ?? 0 );
+        if ( $step < 2 || $step > 3 ) {
+            wp_send_json_error( [ 'message' => 'Invalid quote step.' ] );
+        }
+
+        $posted = self::sanitize_form_v2_post( $_POST );
+        $config = Shortcodes::quote_present_config();
+        $tags   = $config['tags'] ?? [];
+
+        if ( 2 === $step ) {
+            self::validate_form_v2_required_fields( $posted, [
+                'JobTitle'              => 'Job title is required.',
+                '_OwnerManager'         => 'Management company name is required.',
+                '_StreetAddress1'       => 'Street address is required.',
+                'StreetAddress2'        => 'Address line 2 is required.',
+                'City'                  => 'City is required.',
+                'State'                 => 'State is required.',
+                'PostalCode'            => 'Postal code is required.',
+                '_HowDidYouHearAboutUs' => 'Please tell us how you heard about us.',
+            ] );
+
+            self::save_quote_present_fields( $posted, [
+                'JobTitle',
+                '_OwnerManager',
+                '_StreetAddress1',
+                'StreetAddress2',
+                'City',
+                'State',
+                'PostalCode',
+                '_HowDidYouHearAboutUs',
+            ] );
+
+            self::apply_form_v2_tags( [ $tags['step_2'] ?? 0 ] );
+
+            wp_send_json_success( [
+                'message' => 'Property details saved.',
+                'step'    => $step,
+                'action'  => 'next',
+            ] );
+        }
+
+        self::validate_form_v2_required_fields( $posted, [
+            '_KindofPropertyQuoteFor'     => 'Quote property type is required.',
+            '_ofDogs'                     => 'Estimated number of dogs is required.',
+            '_ofUnits'                    => 'Number of units is required.',
+            '_QuoteforHowManyProperties' => 'Please enter how many properties the dogs are for.',
+            '_QuoteComments'              => 'Comments are required.',
+        ] );
+
+        $allowed_property_types = $config['quote_type_options'] ?? [];
+        if ( ! in_array( $posted['_KindofPropertyQuoteFor'], $allowed_property_types, true ) ) {
+            wp_send_json_error( [ 'message' => 'Please select a valid quote property type.' ] );
+        }
+
+        if ( absint( $posted['_ofDogs'] ?? 0 ) < 1 ) {
+            wp_send_json_error( [ 'message' => 'Estimated number of dogs must be at least 1.' ] );
+        }
+
+        if ( absint( $posted['_ofUnits'] ?? 0 ) < 1 ) {
+            wp_send_json_error( [ 'message' => 'Number of units must be at least 1.' ] );
+        }
+
+        if ( absint( $posted['_QuoteforHowManyProperties'] ?? 0 ) < 1 ) {
+            wp_send_json_error( [ 'message' => 'Number of properties must be at least 1.' ] );
+        }
+
+        self::save_quote_present_fields( $posted, [
+            '_KindofPropertyQuoteFor',
+            '_ofDogs',
+            '_ofUnits',
+            '_QuoteforHowManyProperties',
+            '_QuoteComments',
+        ] );
+
+        self::apply_form_v2_tags( [ $tags['step_3'] ?? 0 ] );
+
+        $decision = self::decide_quote_present_result( $posted, $config );
+
+        wp_send_json_success( [
+            'message'  => 'Quote request saved.',
+            'step'     => $step,
+            'action'   => $decision['action'],
+            'url'      => $decision['url'] ?? '',
+            'decision' => $decision['reason'] ?? '',
+        ] );
+    }
+
     private static function sanitize_form_v2_post( $data ) {
         $clean = [];
         foreach ( $data as $key => $value ) {
@@ -307,6 +406,17 @@ class Ajax {
                 continue;
             }
             memb_setContactField( $direct_fields[ $key ], $posted[ $key ] );
+        }
+    }
+
+    private static function save_quote_present_fields( $posted, $keys ) {
+        $field_map = Shortcodes::quote_present_field_map();
+        foreach ( $keys as $key ) {
+            if ( ! isset( $field_map[ $key ] ) || ! array_key_exists( $key, $posted ) ) {
+                continue;
+            }
+
+            memb_setContactField( $field_map[ $key ], $posted[ $key ] );
         }
     }
 
@@ -349,6 +459,138 @@ class Ajax {
                 wp_send_json_error( [ 'message' => $message ] );
             }
         }
+    }
+
+    private static function decide_quote_present_result( $posted, $config ) {
+        $message = [
+            'action' => 'message',
+            'reason' => 'manual_review',
+        ];
+
+        $user = wp_get_current_user();
+        if ( ! $user || empty( $user->user_email ) || ! is_email( $user->user_email ) ) {
+            error_log( 'PooPrints quote decision: missing logged-in user email.' );
+            return [ 'action' => 'message', 'reason' => 'missing_user_email' ];
+        }
+
+        $properties = absint( $posted['_QuoteforHowManyProperties'] ?? 0 );
+        if ( 1 !== $properties ) {
+            return [ 'action' => 'message', 'reason' => 'multiple_properties' ];
+        }
+
+        $email_domain = self::normalize_quote_present_domain( substr( strrchr( $user->user_email, '@' ), 1 ) );
+        if ( '' === $email_domain ) {
+            return [ 'action' => 'message', 'reason' => 'missing_email_domain' ];
+        }
+
+        $public_domains = array_map( [ __CLASS__, 'normalize_quote_present_domain' ], $config['public_email_domains'] ?? [] );
+        if ( in_array( $email_domain, $public_domains, true ) ) {
+            return [ 'action' => 'message', 'reason' => 'public_email_domain' ];
+        }
+
+        $approved_domains = self::get_quote_present_sheet_values( $config['approved_domains_sheet'] ?? '', 'approved_domains' );
+        if ( empty( $approved_domains ) ) {
+            error_log( 'PooPrints quote decision: approved email domain sheet returned no values.' );
+            return [ 'action' => 'message', 'reason' => 'approved_domains_unavailable' ];
+        }
+
+        $approved_domains = array_map( [ __CLASS__, 'normalize_quote_present_domain' ], $approved_domains );
+        if ( ! in_array( $email_domain, $approved_domains, true ) ) {
+            return [ 'action' => 'message', 'reason' => 'email_domain_not_approved' ];
+        }
+
+        $allowed_zips = self::get_quote_present_sheet_values( $config['zip_codes_sheet'] ?? '', 'zip_codes' );
+        if ( empty( $allowed_zips ) ) {
+            error_log( 'PooPrints quote decision: zip code sheet returned no values.' );
+            return [ 'action' => 'message', 'reason' => 'zip_codes_unavailable' ];
+        }
+
+        $zip = self::normalize_quote_present_zip( $posted['PostalCode'] ?? '' );
+        $allowed_zips = array_map( [ __CLASS__, 'normalize_quote_present_zip' ], $allowed_zips );
+        if ( '' === $zip || ! in_array( $zip, $allowed_zips, true ) ) {
+            return [ 'action' => 'message', 'reason' => 'outside_territory' ];
+        }
+
+        $property_type = $posted['_KindofPropertyQuoteFor'] ?? '';
+        if ( ! in_array( $property_type, [ 'Rental', 'HOA' ], true ) ) {
+            return [ 'action' => 'message', 'reason' => 'unsupported_property_type' ];
+        }
+
+        $dogs  = absint( $posted['_ofDogs'] ?? 0 );
+        $units = absint( $posted['_ofUnits'] ?? 0 );
+        $tier  = $units < 50
+            ? ( $dogs < 9 ? 'tiered' : 'prime' )
+            : ( $dogs < 15 ? 'tiered' : 'prime' );
+
+        $redirect_key = strtolower( $property_type ) . '_' . $tier;
+        $path         = $config['redirects'][ $redirect_key ] ?? '';
+        if ( '' === $path ) {
+            error_log( 'PooPrints quote decision: missing redirect path for ' . $redirect_key );
+            return $message;
+        }
+
+        return [
+            'action' => 'redirect',
+            'reason' => $redirect_key,
+            'url'    => home_url( $path ),
+        ];
+    }
+
+    private static function get_quote_present_sheet_values( $url, $cache_key ) {
+        if ( '' === $url ) {
+            return [];
+        }
+
+        $transient_key = 'pooprints_quote_' . sanitize_key( $cache_key );
+        $cached        = get_transient( $transient_key );
+        if ( is_array( $cached ) ) {
+            return $cached;
+        }
+
+        $response = wp_remote_get( $url, [
+            'timeout'     => 8,
+            'redirection' => 3,
+        ] );
+
+        if ( is_wp_error( $response ) ) {
+            error_log( 'PooPrints quote sheet fetch failed for ' . $cache_key . ': ' . $response->get_error_message() );
+            return [];
+        }
+
+        $status_code = wp_remote_retrieve_response_code( $response );
+        $body        = wp_remote_retrieve_body( $response );
+        if ( 200 !== $status_code || '' === trim( $body ) ) {
+            error_log( 'PooPrints quote sheet fetch failed for ' . $cache_key . ' with status: ' . $status_code );
+            return [];
+        }
+
+        $values = [];
+        foreach ( preg_split( '/\R/', $body ) as $line ) {
+            $row   = str_getcsv( $line );
+            $value = trim( (string) ( $row[0] ?? '' ) );
+            if ( '' !== $value ) {
+                $values[] = $value;
+            }
+        }
+
+        $values = array_values( array_unique( $values ) );
+        set_transient( $transient_key, $values, DAY_IN_SECONDS );
+
+        return $values;
+    }
+
+    private static function normalize_quote_present_domain( $domain ) {
+        $domain = strtolower( trim( (string) $domain ) );
+        $domain = preg_replace( '/^https?:\/\//', '', $domain );
+        $domain = ltrim( $domain, '@' );
+        $domain = preg_replace( '/\/.*$/', '', $domain );
+
+        return $domain;
+    }
+
+    private static function normalize_quote_present_zip( $zip ) {
+        $zip = preg_replace( '/[^0-9]/', '', (string) $zip );
+        return substr( $zip, 0, 5 );
     }
 
     private static function append_form_v2_notes( $section, $posted, $labels ) {

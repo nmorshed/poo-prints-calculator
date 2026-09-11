@@ -359,3 +359,321 @@
     width: 100%;
   }
 }
+
+.pp-quote-present {
+  --ppq-red: #e11d2e;
+  --ppq-red-dark: #c31928;
+  --ppq-ink: #111827;
+  --ppq-muted: #667085;
+  --ppq-border: #e5e7eb;
+  --ppq-soft: #f8fafc;
+  color: var(--ppq-ink);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.5;
+  margin: 0 auto;
+  max-width: 1040px;
+  position: relative;
+}
+
+.pp-quote-present *,
+.pp-quote-present *::before,
+.pp-quote-present *::after {
+  box-sizing: border-box;
+}
+
+.pp-quote-present__hero {
+  padding: 18px 0 26px;
+}
+
+.pp-quote-present__hero p,
+.pp-quote-present__message-hero p {
+  align-items: center;
+  color: #1f2937;
+  display: flex;
+  font-size: 20px;
+  gap: 10px;
+  margin: 0 0 10px;
+}
+
+.pp-quote-present__hero p span,
+.pp-quote-present__message-hero p span {
+  background: var(--ppq-red);
+  border-radius: 999px;
+  display: inline-block;
+  height: 9px;
+  width: 9px;
+}
+
+.pp-quote-present__hero h1,
+.pp-quote-present__message-hero h2 {
+  color: var(--ppq-ink);
+  font-size: clamp(42px, 7vw, 68px);
+  line-height: 1.05;
+  margin: 0;
+}
+
+.pp-quote-present__steps {
+  align-items: start;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  list-style: none;
+  margin: 26px 0 44px;
+  padding: 0;
+}
+
+.pp-quote-present__steps li {
+  color: #4b5563;
+  font-size: 15px;
+  font-weight: 700;
+  position: relative;
+}
+
+.pp-quote-present__steps li:not(:last-child)::after {
+  background: #d1d5db;
+  content: "";
+  height: 2px;
+  left: 54px;
+  position: absolute;
+  right: 18px;
+  top: 22px;
+}
+
+.pp-quote-present__steps span {
+  align-items: center;
+  background: #fff;
+  border: 2px solid var(--ppq-red);
+  border-radius: 999px;
+  color: var(--ppq-red);
+  display: flex;
+  font-size: 16px;
+  font-weight: 900;
+  height: 44px;
+  justify-content: center;
+  margin-bottom: 12px;
+  width: 44px;
+}
+
+.pp-quote-present__steps .is-active span,
+.pp-quote-present__steps .is-complete span {
+  background: var(--ppq-red);
+  color: #fff;
+}
+
+.pp-quote-present__card {
+  background: #fff;
+  border: 1px solid var(--ppq-border);
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  display: none;
+  margin: 0 auto;
+  max-width: 920px;
+  padding: clamp(28px, 5vw, 44px);
+}
+
+.pp-quote-present__card.is-active {
+  display: block;
+}
+
+.pp-quote-present__intro {
+  color: var(--ppq-muted);
+  font-size: 16px;
+  margin: 0 0 28px;
+}
+
+.pp-quote-present__grid {
+  display: grid;
+  gap: 18px 20px;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.pp-quote-present input,
+.pp-quote-present select,
+.pp-quote-present textarea {
+  background: #fff;
+  border: 1px solid #d9dee7;
+  border-radius: 7px;
+  color: var(--ppq-ink);
+  font: inherit;
+  font-size: 18px;
+  font-weight: 500;
+  min-height: 50px;
+  padding: 11px 18px;
+  width: 100%;
+}
+
+.pp-quote-present textarea {
+  min-height: 128px;
+  resize: vertical;
+}
+
+.pp-quote-present input:focus,
+.pp-quote-present select:focus,
+.pp-quote-present textarea:focus {
+  border-color: var(--ppq-red);
+  box-shadow: 0 0 0 3px rgba(225, 29, 46, 0.12);
+  outline: 0;
+}
+
+.pp-quote-present input::placeholder,
+.pp-quote-present textarea::placeholder {
+  color: #9ca3af;
+}
+
+.pp-quote-present__button {
+  background: var(--ppq-red);
+  border: 1px solid var(--ppq-red);
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  font-size: 18px;
+  font-weight: 900;
+  justify-content: center;
+  margin: 22px auto 16px;
+  min-height: 56px;
+  min-width: 164px;
+  padding: 14px 28px;
+}
+
+.pp-quote-present__button:hover {
+  background: var(--ppq-red-dark);
+  border-color: var(--ppq-red-dark);
+}
+
+.pp-quote-present__button:disabled {
+  cursor: wait;
+  opacity: 0.75;
+}
+
+.pp-quote-present__secure {
+  color: var(--ppq-muted);
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+  text-align: center;
+}
+
+.pp-quote-present__message {
+  margin-top: 26px;
+}
+
+.pp-quote-present__message-card {
+  background: #fff;
+  border: 1px solid var(--ppq-border);
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  margin: 54px auto 0;
+  max-width: 900px;
+  padding: 42px 28px;
+  text-align: center;
+}
+
+.pp-quote-present__check {
+  align-items: center;
+  background: var(--ppq-red);
+  border-radius: 999px;
+  color: #fff;
+  display: inline-flex;
+  font-size: 54px;
+  font-weight: 900;
+  height: 96px;
+  justify-content: center;
+  margin-bottom: 18px;
+  width: 96px;
+}
+
+.pp-quote-present__message-card h3 {
+  color: #000;
+  font-size: 32px;
+  line-height: 1.2;
+  margin: 0 0 18px;
+}
+
+.pp-quote-present__message-card p {
+  color: var(--ppq-muted);
+  font-size: 19px;
+  margin: 0 auto;
+  max-width: 620px;
+}
+
+.pp-quote-present__loading {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.86);
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  left: 0;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 9999;
+}
+
+.pp-quote-present__loading[hidden] {
+  display: none;
+}
+
+.pp-quote-present__loading div {
+  background: #fff;
+  border: 1px solid var(--ppq-border);
+  border-radius: 8px;
+  box-shadow: 0 12px 34px rgba(15, 23, 42, 0.16);
+  max-width: 360px;
+  padding: 30px;
+  text-align: center;
+}
+
+.pp-quote-present__loading span {
+  animation: ppQuoteSpin 0.8s linear infinite;
+  border: 4px solid #fee2e2;
+  border-top-color: var(--ppq-red);
+  border-radius: 999px;
+  display: inline-block;
+  height: 44px;
+  margin-bottom: 16px;
+  width: 44px;
+}
+
+.pp-quote-present__loading strong {
+  display: block;
+  font-size: 20px;
+  margin-bottom: 6px;
+}
+
+.pp-quote-present__loading p {
+  color: var(--ppq-muted);
+  margin: 0;
+}
+
+@keyframes ppQuoteSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 760px) {
+  .pp-quote-present__hero h1,
+  .pp-quote-present__message-hero h2 {
+    font-size: 42px;
+  }
+
+  .pp-quote-present__steps {
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .pp-quote-present__steps li:not(:last-child)::after {
+    display: none;
+  }
+
+  .pp-quote-present .pp-field--span-3,
+  .pp-quote-present .pp-field--span-4,
+  .pp-quote-present .pp-field--span-6,
+  .pp-quote-present .pp-field--span-8 {
+    grid-column: 1 / -1;
+  }
+
+  .pp-quote-present__button {
+    width: 100%;
+  }
+}

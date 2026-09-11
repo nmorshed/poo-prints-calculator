@@ -58,9 +58,11 @@ class Assets {
             wp_enqueue_style( 'pooprints-form-v2' );
             wp_enqueue_script( 'pooprints-form-v2' );
             wp_localize_script( 'pooprints-form-v2', 'ppFormV2', [
-                'ajax_url' => admin_url( 'admin-ajax.php' ),
-                'nonce'    => wp_create_nonce( 'pooprints_form_v2' ),
-                'action'   => 'pooprints_form_v2_submit',
+                'ajax_url'     => admin_url( 'admin-ajax.php' ),
+                'nonce'        => wp_create_nonce( 'pooprints_form_v2' ),
+                'action'       => 'pooprints_form_v2_submit',
+                'quote_nonce'  => wp_create_nonce( 'which_quote_to_present' ),
+                'quote_action' => 'which_quote_to_present_submit',
             ] );
         }
 

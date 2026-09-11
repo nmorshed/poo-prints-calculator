@@ -140,6 +140,182 @@ class Shortcodes {
         add_shortcode( 'pooprints_gs_close',      [ __CLASS__, 'render_gs_close' ] );
         add_shortcode( 'pooprints_fine_tables',   [ __CLASS__, 'render_fine_tables' ] );
         add_shortcode( 'pooprints_form_v2',        [ __CLASS__, 'render_form_v2' ] );
+        add_shortcode( 'which_quote_to_present',   [ __CLASS__, 'render_which_quote_to_present' ] );
+    }
+
+    /**
+     * PooPrints Form v2: fields used by [which_quote_to_present].
+     */
+    public static function quote_present_field_map() {
+        return [
+            'JobTitle'                    => 'JobTitle',
+            '_OwnerManager'               => '_OwnerManager',
+            '_StreetAddress1'             => '_StreetAddress1',
+            'StreetAddress2'              => 'StreetAddress2',
+            'City'                        => 'City',
+            'State'                       => 'State',
+            'PostalCode'                  => 'PostalCode',
+            '_HowDidYouHearAboutUs'       => '_HowDidYouHearAboutUs',
+            '_KindofPropertyQuoteFor'     => '_KindofPropertyQuoteFor',
+            '_ofDogs'                     => '_ofDogs',
+            '_ofUnits'                    => '_ofUnits',
+            '_QuoteforHowManyProperties' => '_QuoteforHowManyProperties',
+            '_QuoteComments'              => '_QuoteComments',
+        ];
+    }
+
+    /**
+     * PooPrints Form v2: config for [which_quote_to_present].
+     */
+    public static function quote_present_config() {
+        return [
+            'tags' => [
+                'step_2' => 14543,
+                'step_3' => 14545,
+            ],
+            'quote_type_options' => [
+                'Rental',
+                'HOA',
+                'Dog Park',
+                'RV Park',
+                'Municipality',
+                'Something Else',
+            ],
+            'public_email_domains' => [
+                'aol.com',
+                'comcast.net',
+                'gmail.com',
+                'googlemail.com',
+                'hotmail.com',
+                'icloud.com',
+                'live.com',
+                'mail.com',
+                'me.com',
+                'msn.com',
+                'outlook.com',
+                'pm.me',
+                'proton.me',
+                'protonmail.com',
+                'yahoo.com',
+                'ymail.com',
+                'zoho.com',
+            ],
+            'approved_domains_sheet' => 'https://docs.google.com/spreadsheets/d/1KBuTFyWLf1LfV9-ZTrFpDwqq6d7uu_SS/export?format=csv&gid=0',
+            'zip_codes_sheet'        => 'https://docs.google.com/spreadsheets/d/1O4oB_WtZx8SxjUZalM1BfX6ipgq9To94/export?format=csv&gid=0',
+            'redirects' => [
+                'rental_tiered' => '/quote-rental-tiered',
+                'hoa_tiered'    => '/quote-hoa-tiered',
+                'rental_prime'  => '/quote-rental-prime',
+                'hoa_prime'     => '/quote-hoa-prime',
+            ],
+        ];
+    }
+
+    /**
+     * PooPrints Form v2: render the quote routing form.
+     */
+    public static function render_which_quote_to_present() {
+        self::$enqueue_form_v2 = true;
+
+        $quote_options = self::quote_present_config()['quote_type_options'];
+
+        ob_start();
+        ?>
+        <div class="pp-quote-present" data-pp-quote-present>
+            <div class="pp-quote-present__hero" data-pp-quote-hero>
+                <p><span aria-hidden="true"></span><strong data-pp-quote-kicker>About your property</strong></p>
+                <h1 data-pp-quote-title>Where is the property located?</h1>
+            </div>
+
+            <form class="pp-quote-present__form" novalidate>
+                <?php wp_nonce_field( 'which_quote_to_present', 'which_quote_to_present_nonce' ); ?>
+
+                <ol class="pp-quote-present__steps" aria-label="<?php esc_attr_e( 'Quote progress', 'pooprints-calculator' ); ?>">
+                    <li class="is-complete" data-pp-quote-step-dot="1"><span>&#10003;</span>Contact</li>
+                    <li class="is-active" data-pp-quote-step-dot="2"><span>2</span>Property</li>
+                    <li data-pp-quote-step-dot="3"><span>3</span>Dogs</li>
+                </ol>
+
+                <section class="pp-quote-present__card is-active" data-pp-quote-step="2">
+                    <p class="pp-quote-present__intro">A few details about the location so we can build your custom quote.</p>
+                    <div class="pp-quote-present__grid">
+                        <label class="pp-field pp-field--span-6">Job Title *
+                            <input name="JobTitle" type="text" placeholder="Property Manager, Owner, etc." required>
+                        </label>
+                        <label class="pp-field pp-field--span-6">Management Co Name *
+                            <input name="_OwnerManager" type="text" placeholder="Enter management company name" required>
+                        </label>
+                        <label class="pp-field pp-field--full">Street Address *
+                            <input name="_StreetAddress1" type="text" placeholder="Street address" required>
+                        </label>
+                        <label class="pp-field pp-field--full">Address Line 2 *
+                            <input name="StreetAddress2" type="text" placeholder="Suite, Unit #, Leasing Office or ATTN:" required>
+                        </label>
+                        <label class="pp-field pp-field--span-6">City *
+                            <input name="City" type="text" placeholder="City" required>
+                        </label>
+                        <label class="pp-field pp-field--span-3">State *
+                            <input name="State" type="text" placeholder="State" required>
+                        </label>
+                        <label class="pp-field pp-field--span-3">Postal Code *
+                            <input name="PostalCode" type="text" inputmode="numeric" placeholder="ZIP" required>
+                        </label>
+                        <label class="pp-field pp-field--full">How Did You Hear About Us? *
+                            <textarea name="_HowDidYouHearAboutUs" rows="4" placeholder="Referral, search, conference, etc." required></textarea>
+                        </label>
+                    </div>
+                    <button type="button" class="pp-quote-present__button" data-pp-quote-next>Continue</button>
+                    <p class="pp-quote-present__secure">Your information is secure</p>
+                </section>
+
+                <section class="pp-quote-present__card" data-pp-quote-step="3">
+                    <p class="pp-quote-present__intro">Last step &mdash; tell us about the dogs we'll be DNA-testing.</p>
+                    <div class="pp-quote-present__grid">
+                        <label class="pp-field pp-field--full">Quote Property Type *
+                            <select name="_KindofPropertyQuoteFor" required>
+                                <option value="">Please select one</option>
+                                <?php foreach ( $quote_options as $option ) : ?>
+                                    <option value="<?php echo esc_attr( $option ); ?>"><?php echo esc_html( $option ); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </label>
+                        <label class="pp-field pp-field--span-6">Estimated # of Dogs *
+                            <input name="_ofDogs" type="number" min="1" step="1" required>
+                        </label>
+                        <label class="pp-field pp-field--span-6"># of Units *
+                            <input name="_ofUnits" type="number" min="1" step="1" required>
+                        </label>
+                        <label class="pp-field pp-field--full">How Many Properties is the # of Dogs For? *
+                            <input name="_QuoteforHowManyProperties" type="number" min="1" step="1" required>
+                        </label>
+                        <label class="pp-field pp-field--full">Comments *
+                            <textarea name="_QuoteComments" rows="5" required></textarea>
+                        </label>
+                    </div>
+                    <button type="button" class="pp-quote-present__button" data-pp-quote-submit>Request My Free Quote</button>
+                    <p class="pp-quote-present__secure">Your information is secure</p>
+                </section>
+
+                <section class="pp-quote-present__message" data-pp-quote-message hidden>
+                    <div class="pp-quote-present__message-card">
+                        <div class="pp-quote-present__check" aria-hidden="true">&#10003;</div>
+                        <h3>We've got your information</h3>
+                        <p>We usually email your quote on the same business day, but no later than the next business day.</p>
+                    </div>
+                </section>
+
+                <div class="pp-form-v2__notice" data-pp-quote-notice role="status" aria-live="polite"></div>
+                <div class="pp-quote-present__loading" data-pp-quote-loading hidden>
+                    <div>
+                        <span aria-hidden="true"></span>
+                        <strong>Working on your quote...</strong>
+                        <p>Please wait while we review your information.</p>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <?php
+        return ob_get_clean();
     }
 
     /**

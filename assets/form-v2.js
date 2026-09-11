@@ -192,3 +192,149 @@
   updateConditionals();
   showStep(1);
 })();
+
+(function () {
+  var root = document.querySelector('[data-pp-quote-present]');
+  if (!root || typeof ppFormV2 === 'undefined') return;
+
+  var form = root.querySelector('.pp-quote-present__form');
+  var panels = Array.prototype.slice.call(root.querySelectorAll('[data-pp-quote-step]'));
+  var dots = Array.prototype.slice.call(root.querySelectorAll('[data-pp-quote-step-dot]'));
+  var notice = root.querySelector('[data-pp-quote-notice]');
+  var loading = root.querySelector('[data-pp-quote-loading]');
+  var heroKicker = root.querySelector('[data-pp-quote-kicker]');
+  var heroTitle = root.querySelector('[data-pp-quote-title]');
+  var message = root.querySelector('[data-pp-quote-message]');
+  var nextBtn = root.querySelector('[data-pp-quote-next]');
+  var submitBtn = root.querySelector('[data-pp-quote-submit]');
+  var currentStep = 2;
+
+  function showNotice(messageText, type) {
+    if (!notice) return;
+    notice.textContent = messageText || '';
+    notice.className = 'pp-form-v2__notice';
+    if (messageText) notice.classList.add('is-visible', 'is-' + (type || 'info'));
+  }
+
+  function setLoading(isLoading) {
+    if (loading) loading.hidden = !isLoading;
+    Array.prototype.slice.call(form.querySelectorAll('input, select, textarea, button')).forEach(function (field) {
+      field.disabled = isLoading;
+    });
+  }
+
+  function showStep(step) {
+    currentStep = step;
+    panels.forEach(function (panel) {
+      panel.classList.toggle('is-active', parseInt(panel.dataset.ppQuoteStep, 10) === step);
+    });
+    dots.forEach(function (dot) {
+      var dotStep = parseInt(dot.dataset.ppQuoteStepDot, 10);
+      dot.classList.toggle('is-active', dotStep === step);
+      dot.classList.toggle('is-complete', dotStep < step);
+      dot.querySelector('span').textContent = dotStep < step ? '\u2713' : String(dotStep);
+    });
+
+    if (heroKicker) heroKicker.textContent = step === 3 ? 'About the dogs' : 'About your property';
+    if (heroTitle) heroTitle.textContent = step === 3 ? 'Last step' : 'Where is the property located?';
+    showNotice('', 'info');
+  }
+
+  function activePanel() {
+    return root.querySelector('[data-pp-quote-step="' + currentStep + '"]');
+  }
+
+  function validateStep() {
+    var panel = activePanel();
+    if (!panel) return true;
+
+    var fields = Array.prototype.slice.call(panel.querySelectorAll('input, select, textarea'));
+    for (var i = 0; i < fields.length; i++) {
+      var field = fields[i];
+      if (field.disabled || field.offsetParent === null) continue;
+      if (!field.checkValidity()) {
+        field.reportValidity();
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function submitStep(step) {
+    var data = new FormData(form);
+    data.set('action', ppFormV2.quote_action);
+    data.set('nonce', ppFormV2.quote_nonce);
+    data.set('step', String(step));
+
+    return fetch(ppFormV2.ajax_url, {
+      method: 'POST',
+      credentials: 'same-origin',
+      body: data
+    })
+      .then(function (response) { return response.json(); })
+      .then(function (payload) {
+        if (!payload || !payload.success) {
+          var msg = payload && payload.data && payload.data.message ? payload.data.message : 'Unable to save this step.';
+          throw new Error(msg);
+        }
+        console.log('PooPrints quote decision:', payload.data);
+        return payload.data;
+      });
+  }
+
+  function showMessage() {
+    panels.forEach(function (panel) {
+      panel.classList.remove('is-active');
+    });
+    root.querySelector('.pp-quote-present__steps').hidden = true;
+    if (message) message.hidden = false;
+    if (heroKicker) heroKicker.textContent = 'Quote request received';
+    if (heroTitle) heroTitle.textContent = "Thanks \u2014 we'll be in touch.";
+    showNotice('', 'info');
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', function () {
+      if (!validateStep()) return;
+
+      nextBtn.disabled = true;
+      nextBtn.textContent = 'Saving...';
+      showNotice('', 'info');
+
+      submitStep(2).then(function () {
+        showStep(3);
+      }).catch(function (error) {
+        console.error('PooPrints quote step 2 error:', error);
+        showNotice(error.message, 'error');
+      }).finally(function () {
+        nextBtn.disabled = false;
+        nextBtn.textContent = 'Continue';
+      });
+    });
+  }
+
+  if (submitBtn) {
+    submitBtn.addEventListener('click', function () {
+      if (!validateStep()) return;
+
+      setLoading(true);
+      showNotice('', 'info');
+
+      submitStep(3).then(function (result) {
+        if (result.action === 'redirect' && result.url) {
+          window.location.href = result.url;
+          return;
+        }
+
+        setLoading(false);
+        showMessage();
+      }).catch(function (error) {
+        console.error('PooPrints quote step 3 error:', error);
+        setLoading(false);
+        showNotice(error.message, 'error');
+      });
+    });
+  }
+
+  showStep(2);
+})();
