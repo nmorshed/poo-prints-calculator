@@ -4,6 +4,7 @@ namespace PooPrints;
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 class Assets {
+    private static $form_v2_localized = false;
 
     public static function init() {
         add_action( 'wp_enqueue_scripts', [ __CLASS__, 'register_assets' ] );
@@ -55,15 +56,7 @@ class Assets {
 
     public static function maybe_enqueue() {
         if ( Shortcodes::$enqueue_form_v2 ) {
-            wp_enqueue_style( 'pooprints-form-v2' );
-            wp_enqueue_script( 'pooprints-form-v2' );
-            wp_localize_script( 'pooprints-form-v2', 'ppFormV2', [
-                'ajax_url'     => admin_url( 'admin-ajax.php' ),
-                'nonce'        => wp_create_nonce( 'pooprints_form_v2' ),
-                'action'       => 'pooprints_form_v2_submit',
-                'quote_nonce'  => wp_create_nonce( 'which_quote_to_present' ),
-                'quote_action' => 'which_quote_to_present_submit',
-            ] );
+            self::enqueue_form_v2();
         }
 
         if ( ! Shortcodes::$enqueue_assets && ! Shortcodes::$enqueue_sidenav ) {
@@ -81,20 +74,42 @@ class Assets {
         wp_localize_script( 'pooprints-calculator', 'ppPrices', [
             'ajax_url'             => admin_url( 'admin-ajax.php' ),
             'nonce'                => wp_create_nonce( 'pooprints_update_units' ),
-            'swab_kit'             => (float) Settings_Page::get('price_swab_kit'),
-            'waste_kit'            => (float) Settings_Page::get('price_waste_kit'),
-            'setup_fee'            => (float) Settings_Page::get('price_setup_fee'),
-            'subscription_fee'     => (float) Settings_Page::get('price_subscription_fee'),
-            'single_pay_discount'  => (float) Settings_Page::get('price_single_pay_discount') / 100,
+            'swab_kit'            => (float) Settings_Page::get('price_swab_kit'),
+            'waste_kit'           => (float) Settings_Page::get('price_waste_kit'),
+            'setup_fee'           => (float) Settings_Page::get('price_setup_fee'),
+            'subscription_fee'    => (float) Settings_Page::get('price_subscription_fee'),
+            'single_pay_discount' => (float) Settings_Page::get('price_single_pay_discount') / 100,
             'profit_per_test'      => (float) Settings_Page::get('rate_profit_per_test'),
-            'minutes_email'        => (int)   Settings_Page::get('minutes_email'),
-            'minutes_phone'        => (int)   Settings_Page::get('minutes_phone'),
-            'minutes_social'       => (int)   Settings_Page::get('minutes_social'),
+            'minutes_email'       => (int)   Settings_Page::get('minutes_email'),
+            'minutes_phone'       => (int)   Settings_Page::get('minutes_phone'),
+            'minutes_social'      => (int)   Settings_Page::get('minutes_social'),
             'regression_a'         => (float) Settings_Page::get('regression_a'),
             'regression_b'         => (float) Settings_Page::get('regression_b'),
             'regression_c'         => (float) Settings_Page::get('regression_c'),
             'field_map'            => self::build_field_map(),
         ] );
+
+    }
+
+    public static function enqueue_form_v2() {
+        if ( ! wp_style_is( 'pooprints-form-v2', 'registered' ) ) {
+            self::register_assets();
+        }
+        wp_enqueue_style( 'pooprints-form-v2' );
+        wp_enqueue_script( 'pooprints-form-v2' );
+        if ( ! self::$form_v2_localized ) {
+            wp_localize_script( 'pooprints-form-v2', 'ppFormV2', [
+                'ajax_url'     => admin_url( 'admin-ajax.php' ),
+                'nonce'        => wp_create_nonce( 'pooprints_form_v2' ),
+                'action'       => 'pooprints_form_v2_submit',
+                'quote_nonce'  => wp_create_nonce( 'which_quote_to_present' ),
+                'quote_action' => 'which_quote_to_present_submit',
+            ] );
+            self::$form_v2_localized = true;
+        }
+        if ( did_action( 'wp_head' ) ) {
+            wp_print_styles( 'pooprints-form-v2' );
+        }
 
     }
 

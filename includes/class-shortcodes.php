@@ -216,6 +216,7 @@ class Shortcodes {
      */
     public static function render_which_quote_to_present() {
         self::$enqueue_form_v2 = true;
+        Assets::enqueue_form_v2();
 
         $quote_options = self::quote_present_config()['quote_type_options'];
         $values        = array_fill_keys( array_keys( self::quote_present_field_map() ), '' );
