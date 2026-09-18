@@ -782,15 +782,67 @@ class Shortcodes {
     }
 
     /**
+     * Average money recovered per tested waste sample.
+     *
+     * Profit per test is the business input we set; recovery falls out of it.
+     * Never derive this from match rate x recommended fine — doing so makes the
+     * math card's profit line stop matching the total it prints two rows below.
+     */
+    private static function avg_recovery_per_sample() {
+        return (float) Settings_Page::get( 'rate_profit_per_test' )
+             + (float) Settings_Page::get( 'price_waste_sample_test' );
+    }
+
+    /**
+     * Average match rate as a decimal, derived from the figures the math card prints.
+     * Deliberately not the stored stat_avg_match_rate setting, so card and tables agree.
+     * No zero guard: Settings_Page::get() replaces a zero fine with its default.
+     */
+    private static function derived_match_rate() {
+        return self::avg_recovery_per_sample() / (float) Settings_Page::get( 'stat_recommended_fine' );
+    }
+
+    /**
+     * Option 1 single payment, same inputs and math as render_option1() and calcOption1().
+     */
+    private static function option1_single_payment() {
+        $qty_swab  = self::resolve_option_swab_qty( 'o1_qty_swab', true );
+        $qty_waste = (int) self::resolve_field( 'o1_qty_waste' );
+        return $qty_swab  * (float) Settings_Page::get( 'price_swab_kit' )
+             + $qty_waste * (float) Settings_Page::get( 'price_waste_kit' )
+             + (float) Settings_Page::get( 'price_setup_fee' )
+             + (float) Settings_Page::get( 'price_subscription_fee' );
+    }
+
+    /** Mirrors fmtInt() in main.js, including abs(). */
+    private static function roi_money( $n ) {
+        return '$' . number_format( round( abs( $n ) ) );
+    }
+
+    /** Mirrors fmtHours() in main.js. */
+    private static function roi_hours( $n ) {
+        return number_format( abs( $n ), 2 );
+    }
+
+    /**
      * [pooprints_value key="units"]
+     * [pooprints_value key="rate_profit_per_test" decimals="0"]
      * Outputs <span data-key="{key}">{default}</span>.
      * JS updates the span content live as inputs change.
+     *
+     * The optional decimals attribute is display-only: it formats the output of
+     * one render and never touches a stored value or a calculation.
      */
     public static function render_value( $atts ) {
         self::$enqueue_assets = true;
 
-        $atts = shortcode_atts( [ 'key' => '' ], $atts, 'pooprints_value' );
+        $atts = shortcode_atts( [ 'key' => '', 'decimals' => '' ], $atts, 'pooprints_value' );
         $key  = sanitize_key( $atts['key'] );
+
+        // Null means "not specified" — that path must stay byte-identical to pre-1.2.3 output.
+        $decimals = ( '' !== $atts['decimals'] && is_numeric( $atts['decimals'] ) && (int) $atts['decimals'] >= 0 )
+            ? (int) $atts['decimals']
+            : null;
 
         // Numeric price/stat keys rendered by PHP (no $ prefix — template adds it where needed).
         $php_dollar_keys = [
@@ -803,6 +855,8 @@ class Shortcodes {
             'stat_fine_low_end', 'stat_fine_high_end', 'stat_prime_pet_fee_increase', 'stat_tiered_pet_fee_increase',
             'stat_avg_match_rate', 'stat_waste_samples_analyzed',
         ];
+        // Derived keys — computed from settings rather than stored as one.
+        $php_derived_keys = [ 'stat_avg_recovery_per_sample', 'stat_avg_match_rate_pct' ];
         // Raw text stat keys rendered by PHP as-is.
         $php_stat_keys = [
             'stat_pooprints_properties', 'stat_five_star_reviews', 'stat_years_in_business',
@@ -813,29 +867,47 @@ class Shortcodes {
             [
                 'opt1_qty_swab', 'opt1_qty_waste', 'total_units', 'total_dogs',
                 'opt1_payment_monthly', 'opt1_payment_single', 'opt1_payment_12total', 'opt1_payment_savings',
-                'roi_savings_total', 'roi_net_return',
+                'opt1_single_per_unit_month',
+                'roi_savings_total', 'roi_net_return', 'roi_return_multiple',
                 'opt2_qty_swab', 'opt2_payment_single',
-                'roi_hours_saved', 'roi_cash_savings', 'roi_fees_recovered',
+                'roi_hours_saved', 'roi_hours_saved_whole', 'roi_cash_savings', 'roi_fees_recovered',
                 'roi_turnover_saved', 'roi_acquisition_saved',
             ],
             $php_dollar_keys,
+            $php_derived_keys,
             $php_stat_keys
         );
 
         if ( ! in_array( $key, $allowed_keys, true ) ) {
             return '';
         }
+        if ( in_array( $key, $php_derived_keys, true ) ) {
+            if ( 'stat_avg_match_rate_pct' === $key ) {
+                $out = number_format( self::derived_match_rate() * 100, null === $decimals ? 1 : $decimals ) . '%';
+            } else {
+                $out = number_format( self::avg_recovery_per_sample(), null === $decimals ? 2 : $decimals );
+            }
+            return sprintf(
+                '<span data-pp-key="%s">%s</span>',
+                esc_attr( $key ),
+                esc_html( $out )
+            );
+        }
         if ( in_array( $key, $php_dollar_keys, true ) ) {
             $val = (float) Settings_Page::get( $key );
             return sprintf(
                 '<span data-pp-key="%s">%s</span>',
                 esc_attr( $key ),
-                esc_html( number_format( $val, 2 ) )
+                esc_html( number_format( $val, null === $decimals ? 2 : $decimals ) )
             );
         }
 
         if ( in_array( $key, $php_stat_keys, true ) ) {
             $val = Settings_Page::get( $key );
+            // Several of these are prose, not numbers ("9,000+", "$375 (row 8)") — leave those alone.
+            if ( null !== $decimals && is_numeric( $val ) ) {
+                $val = number_format( (float) $val, $decimals );
+            }
             return sprintf(
                 '<span data-pp-key="%s">%s</span>',
                 esc_attr( $key ),
@@ -843,9 +915,11 @@ class Shortcodes {
             );
         }
 
+        // Calculator keys: main.js fills these in, so pass decimals on for it to apply.
         return sprintf(
-            '<span data-pp-key="%s">—</span>',
-            esc_attr( $key )
+            '<span data-pp-key="%s"%s>—</span>',
+            esc_attr( $key ),
+            null === $decimals ? '' : sprintf( ' data-pp-decimals="%d"', $decimals )
         );
     }
 
@@ -1147,6 +1221,30 @@ class Shortcodes {
         $staff_wage       = (float) self::resolve_field( 'staff_wage' );
         $pickup_hours_pw  = (float) self::resolve_field( 'pickup_hours_per_week' );
 
+        // Starting figures, ported line for line from calcROI() in main.js so the served
+        // HTML matches what the calculator paints. Keep the two in step.
+        $turnover_saved    = $renewals_saved * $turnover_cost;
+        $acquisition_saved = $renewals_saved * $acquisition_cost;
+
+        $annual_tests      = ( (float) Settings_Page::get( 'regression_a' )
+                             + (float) Settings_Page::get( 'regression_b' ) * $units
+                             + (float) Settings_Page::get( 'regression_c' ) * $dogs ) * 12;
+        $waste_test_profit = $annual_tests * (float) Settings_Page::get( 'rate_profit_per_test' );
+
+        $total_cash_savings  = $turnover_saved + $acquisition_saved + $waste_test_profit;
+        $fees_recovered      = $hidden_dogs * ( ( $rent_per_dog * 12 ) + $dog_fee );
+        $total_cash_and_fees = $total_cash_savings + $fees_recovered;
+
+        // 52 weeks and 0.95 waste reduction are fixed in main.js too; there is no setting.
+        $complaint_hours_saved = ( $complaints_per_week / 3 ) * ( ( $minutes_email + $minutes_phone + $minutes_social ) / 60 ) * 52;
+        $pickup_hours_saved    = $pickup_hours_pw * 52 * 0.95;
+        $total_hours_saved     = $complaint_hours_saved + $pickup_hours_saved;
+
+        $time_value        = $total_hours_saved * $staff_wage;
+        $total_all_savings = $total_cash_and_fees + $time_value;
+        $single_payment    = self::option1_single_payment();
+        $roi               = $total_all_savings - $single_payment;
+
         ob_start();
         ?>
         <div class="roi-masthead">
@@ -1169,29 +1267,29 @@ class Shortcodes {
                 <div class="roi-row green-toggle" onclick="toggleSection('groupA', this.querySelector('.row-arrow'))">
                   <span class="row-arrow">&#9658;</span>
                   <span class="row-label">Total Cash Savings and Recovered Fees</span>
-                  <span class="row-value" id="roi_total_cash_and_fees">$12,981</span>
+                  <span class="row-value" id="roi_total_cash_and_fees"><?php echo esc_html( self::roi_money( $total_cash_and_fees ) ); ?></span>
                 </div>
                 <!-- GROUP A detail (DOM second → visually top) -->
                 <div id="groupA" style="display:none;">
                   <div class="roi-row">
                     <span class="row-label">Annual Turnover Cost Saved</span>
-                    <span class="row-value" id="roi_turnover_saved">$4,000</span>
+                    <span class="row-value" id="roi_turnover_saved"><?php echo esc_html( self::roi_money( $turnover_saved ) ); ?></span>
                   </div>
                   <div class="roi-row">
                     <span class="row-label">Annual Renter Acquisition Costs Saved (No Longer Needed)</span>
-                    <span class="row-value" id="roi_acquisition_saved">$4,220</span>
+                    <span class="row-value" id="roi_acquisition_saved"><?php echo esc_html( self::roi_money( $acquisition_saved ) ); ?></span>
                   </div>
                   <div class="roi-row">
                     <span class="row-label">Annual Profit Testing Un-Scooped Waste (Based on Average Test Results)</span>
-                    <span class="row-value" id="roi_waste_test_profit">$261</span>
+                    <span class="row-value" id="roi_waste_test_profit"><?php echo esc_html( self::roi_money( $waste_test_profit ) ); ?></span>
                   </div>
                   <div class="roi-row roi-bold-row">
                     <span class="row-label">Subtotal Cost Savings</span>
-                    <span class="row-value" id="roi_total_cash_savings">$8,481</span>
+                    <span class="row-value" id="roi_total_cash_savings"><?php echo esc_html( self::roi_money( $total_cash_savings ) ); ?></span>
                   </div>
                   <div class="roi-row">
                     <span class="row-label">Fees Recovered Due to Finding Hidden Dogs Using PooPrints</span>
-                    <span class="row-value" id="roi_fees_recovered">$4,500</span>
+                    <span class="row-value" id="roi_fees_recovered"><?php echo esc_html( self::roi_money( $fees_recovered ) ); ?></span>
                   </div>
                 </div>
               </div>
@@ -1202,21 +1300,21 @@ class Shortcodes {
                 <div class="roi-row green-toggle" onclick="toggleSection('groupB', this.querySelector('.row-arrow'))">
                   <span class="row-arrow">&#9658;</span>
                   <span class="row-label">Value of Time Saved Handling Dog Waste Complaints and Clean Up</span>
-                  <span class="row-value" id="roi_time_value">$5,642</span>
+                  <span class="row-value" id="roi_time_value"><?php echo esc_html( self::roi_money( $time_value ) ); ?></span>
                 </div>
                 <!-- GROUP B detail (DOM second → visually top) -->
                 <div id="groupB" style="display:none;">
                   <div class="roi-row">
                     <span class="row-label">Annual Communication Hours Saved</span>
-                    <span class="row-value" id="roi_complaint_hours_saved">30.33</span>
+                    <span class="row-value" id="roi_complaint_hours_saved"><?php echo esc_html( self::roi_hours( $complaint_hours_saved ) ); ?></span>
                   </div>
                   <div class="roi-row">
                     <span class="row-label">Annual Pickup Hours Saved</span>
-                    <span class="row-value" id="roi_pickup_hours_saved">148.20</span>
+                    <span class="row-value" id="roi_pickup_hours_saved"><?php echo esc_html( self::roi_hours( $pickup_hours_saved ) ); ?></span>
                   </div>
                   <div class="roi-row roi-bold-row">
                     <span class="row-label">Total Annual Staff Time Saved in Hours</span>
-                    <span class="row-value" id="roi_total_hours_saved">178.53</span>
+                    <span class="row-value" id="roi_total_hours_saved"><?php echo esc_html( self::roi_hours( $total_hours_saved ) ); ?></span>
                   </div>
                 </div>
               </div>
@@ -1224,15 +1322,15 @@ class Shortcodes {
               <!-- Always-visible summary rows -->
               <div class="roi-row green-summary">
                 <span class="row-label">Total Savings All Items</span>
-                <span class="row-value" id="roi_total_all_savings">$18,623</span>
+                <span class="row-value" id="roi_total_all_savings"><?php echo esc_html( self::roi_money( $total_all_savings ) ); ?></span>
               </div>
               <div class="roi-row grey-row">
                 <span class="row-label">Subtract Your PooPrints Investment Quote</span>
-                <span class="row-value" id="roi_investment_display">&minus;$1,393</span>
+                <span class="row-value" id="roi_investment_display">&minus;<?php echo esc_html( self::roi_money( $single_payment ) ); ?></span>
               </div>
               <div class="roi-row final-row">
                 <span class="row-label">Return on Your PooPrints Investment in First Year</span>
-                <span class="row-value" id="roi_final">$17,229</span>
+                <span class="row-value" id="roi_final"><?php echo esc_html( self::roi_money( $roi ) ); ?></span>
               </div>
 
             </div><!-- /roi-left -->
@@ -2141,7 +2239,7 @@ class Shortcodes {
         $show = sanitize_key( $atts['show'] );
 
         $total_cost       = (float) Settings_Page::get( 'price_waste_sample_test' );
-        $avg_match_rate   = (float) Settings_Page::get( 'stat_avg_match_rate' );
+        $avg_match_rate   = self::derived_match_rate();
         $recommended_fine = (int)   Settings_Page::get( 'stat_recommended_fine' );
         $breakeven_fine   = $avg_match_rate > 0 ? (int) round( $total_cost / $avg_match_rate ) : 0;
 

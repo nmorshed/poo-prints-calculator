@@ -770,6 +770,7 @@ class Settings_Page {
             '[pooprints_sidenav]'          => __( 'Renders a side navigation from the menu chosen under Settings → General → Side navigation menu. Top-level links only (Appearance → Menus). Use Elementor’s sticky on the column or widget if you want it fixed while scrolling.', 'pooprints-calculator' ),
             '[pooprints_sidenav menu="slug"]' => __( 'Same as [pooprints_sidenav] but uses a specific menu: WordPress menu ID, slug, or name (overrides the setting).', 'pooprints-calculator' ),
             '[pooprints_value key="..."]'  => __( 'Renders a live dynamic value span inside prose text. Alias: [pp_value key="..."]', 'pooprints-calculator' ),
+            '[pooprints_value key="..." decimals="0"]' => __( 'Optional. Forces how many decimal places the value is shown with: decimals="0" renders 52 instead of 52.00, decimals="2" forces two places. Thousands separators are kept. Works on every value; values that are not plain numbers (for example "9,000+") are left exactly as they are. Live calculator values arrive already rounded, so decimals can remove places but adding places pads with zeros (roi_hours_saved_whole with decimals="2" shows 173.00; use roi_hours_saved for 173.33). Omit the attribute to keep the current formatting.', 'pooprints-calculator' ),
             '[pooprints_form_v2]'         => __( 'Renders the four-step PooPrints Form v2 order form with Keap field updates, ContactNotes, and stage tags.', 'pooprints-calculator' ),
             '[pooprints_fine_tables]'      => __( 'Renders both fine reference tables side by side (breakeven + profit/loss).', 'pooprints-calculator' ),
             '[pooprints_fine_tables show="breakeven"]' => __( 'Renders only the Breakeven Fine Amount table.', 'pooprints-calculator' ),
@@ -784,6 +785,7 @@ class Settings_Page {
                 'opt1_payment_single'   => 'Pay in full amount (10% discount applied)',
                 'opt1_payment_12total'  => 'Total cost over 12 monthly payments (no discount)',
                 'opt1_payment_savings'  => 'Dollar amount saved by paying in full vs. monthly plan (whole number)',
+                'opt1_single_per_unit_month' => 'Pay in full amount spread per unit per month. Show this beside the PAY IN FULL price only, never beside the monthly payment — the monthly plan works out to a different figure per unit.',
             ],
             'Option 2' => [
                 'opt2_qty_swab'        => 'Qty DNA swab kits',
@@ -800,7 +802,9 @@ class Settings_Page {
                 'roi_turnover_saved'   => 'Turnover cost savings',
                 'roi_acquisition_saved'=> 'Acquisition cost savings',
                 'roi_hours_saved'      => 'Total staff hours saved per year',
+                'roi_hours_saved_whole'=> 'Total staff hours saved per year, rounded to a whole number (for prose)',
                 'roi_net_return'       => 'Net return (savings minus investment)',
+                'roi_return_multiple'  => 'Savings per dollar invested, whole number (drives the ROI headline)',
             ],
             'Prices & Rates' => [
                 'price_swab_kit'               => 'DNA Swab Kit price',
@@ -820,7 +824,9 @@ class Settings_Page {
                 'stat_pooprints_properties'          => 'Number of PooPrints properties',
                 'stat_five_star_reviews'             => 'Number of 5 star reviews',
                 'stat_years_in_business'             => 'Years in business',
-                'stat_avg_match_rate'                => 'Average waste testing match rate (decimal, used in fine tables)',
+                'stat_avg_match_rate'                => 'Average waste testing match rate (decimal). Stored setting only; the fine tables and stat_avg_match_rate_pct calculate their own rate from current prices.',
+                'stat_avg_match_rate_pct'            => 'Average waste testing match rate as a percentage, e.g. 52.0% — calculated from average recovery per sample ÷ recommended fine, so it always agrees with the recovery figure. Not the stored match rate setting.',
+                'stat_avg_recovery_per_sample'       => 'Average money recovered per tested waste sample — calculated from Average waste testing profit + Total cost to process a waste sample test, so there is no setting to edit. No $ prefix.',
                 'stat_loss_charge_sample_only'       => 'Loss amount when charging only the cost to process a waste sample',
                 'stat_recommended_fine'              => 'Recommended fine amount',
                 'stat_recommended_fine_row'          => 'Recommended fine amount and row # in table',
@@ -885,6 +891,8 @@ class Settings_Page {
             <p><?php esc_html_e( 'Place live calculated values inline within paragraph text. Both shortcodes are identical:', 'pooprints-calculator' ); ?><br>
                 <code>[pooprints_value key="roi_savings_total"]</code> &nbsp;or&nbsp; <code>[pp_value key="roi_savings_total"]</code>
             </p>
+
+            <p><?php esc_html_e( 'Any value also accepts decimals="…" to set the number of decimal places, e.g. decimals="0".', 'pooprints-calculator' ); ?></p>
 
             <table class="widefat striped" style="margin-top: 12px;">
                 <thead>

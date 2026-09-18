@@ -53,6 +53,9 @@ document.addEventListener('DOMContentLoaded', function () {
     return Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
+  // Em dash — matches the placeholder render_value() emits for values not yet computed.
+  var DASH = '—';
+
   function set(id, text) {
     const el = document.getElementById(id);
     if (el) el.textContent = text;
@@ -61,8 +64,19 @@ document.addEventListener('DOMContentLoaded', function () {
   // Update all [data-pp-key="key"] spans — shortcode [pooprints_value] renders these.
   function setByKey(key, text) {
     document.querySelectorAll('[data-pp-key="' + key + '"]').forEach(function (el) {
-      el.textContent = text;
+      el.textContent = withDecimals(text, el.getAttribute('data-pp-decimals'));
     });
+  }
+
+  // Honours [pooprints_value decimals="…"]: reformats an already formatted number.
+  // Dashes and other text pass through unchanged.
+  function withDecimals(text, decimals) {
+    if (decimals === null) return text;
+    var s = String(text).replace(/,/g, '');
+    var n = Number(s);
+    if (s.trim() === '' || !isFinite(n)) return text;
+    var d = Math.min(parseInt(decimals, 10), 20);
+    return n.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
   }
 
   /* ============================================================
@@ -328,12 +342,21 @@ document.addEventListener('DOMContentLoaded', function () {
     setByKey('total_units',            units);
     setByKey('total_dogs',             dogs);
     setByKey('roi_savings_total',      Math.round(total_all_savings).toLocaleString('en-US'));
-    setByKey('roi_net_return',         Math.abs(roi).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+    setByKey('roi_net_return',         Math.round(Math.abs(roi)).toLocaleString('en-US'));
     setByKey('roi_hours_saved',        fmtHours(total_hours_saved));
+    setByKey('roi_hours_saved_whole',  Math.round(total_hours_saved).toLocaleString('en-US'));
     setByKey('roi_cash_savings',       Math.round(total_cash_savings).toLocaleString('en-US'));
     setByKey('roi_fees_recovered',     Math.round(fees_recovered).toLocaleString('en-US'));
     setByKey('roi_turnover_saved',     Math.round(turnover_saved).toLocaleString('en-US'));
     setByKey('roi_acquisition_saved',  Math.round(acquisition_saved).toLocaleString('en-US'));
+
+    // Divide the precise values, never the rounded display strings above.
+    setByKey('roi_return_multiple',
+      singlePayment > 0 ? Math.round(total_all_savings / singlePayment).toLocaleString('en-US') : DASH);
+    setByKey('opt1_single_per_unit_month',
+      ( singlePayment > 0 && units > 0 )
+        ? (singlePayment / units / 12).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        : DASH);
   }
 
   /* ============================================================

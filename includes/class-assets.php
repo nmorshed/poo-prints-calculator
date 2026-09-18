@@ -146,7 +146,9 @@ class Assets {
         foreach ( Shortcodes::field_map() as $param => $entry ) {
             $result[ $param ] = [
                 'id'      => $param,     // key IS the input element ID
-                'default' => $entry[2],  // default value
+                // Same formatting as the rendered inputs so Reset shows 31.60, not 31.6. Must stay
+                // format_smart_decimal: it adds no thousands separator, which number inputs reject.
+                'default' => 'float' === $entry[1] ? Settings_Page::format_smart_decimal( $entry[2] ) : $entry[2],
             ];
         }
         return $result;
