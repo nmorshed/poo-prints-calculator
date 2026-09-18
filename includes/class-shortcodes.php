@@ -313,11 +313,36 @@ class Shortcodes {
                 </section>
 
                 <div class="pp-form-v2__notice" data-pp-quote-notice role="status" aria-live="polite"></div>
-                <div class="pp-quote-present__loading" data-pp-quote-loading hidden>
-                    <div>
-                        <span aria-hidden="true"></span>
-                        <strong>Working on your quote...</strong>
-                        <p>Please wait while we review your information.</p>
+                <div class="pp-quote-present__loading" data-pp-quote-loading role="dialog" aria-modal="true" aria-labelledby="pp-quote-loading-title" aria-describedby="pp-quote-loading-status" hidden>
+                    <div class="pp-quote-present__loading-card">
+                        <div class="pp-quote-present__loading-rule" aria-hidden="true"></div>
+                        <div class="pp-quote-present__loading-status" id="pp-quote-loading-status" role="status" aria-live="polite">
+                            <span class="pp-quote-present__spinner" aria-hidden="true"></span>
+                            <span>Working on your quote...</span>
+                        </div>
+                        <h2 id="pp-quote-loading-title">Review your submitted information</h2>
+                        <div class="pp-quote-present__summary">
+                            <div class="pp-quote-present__summary-title">Property Information</div>
+                            <dl>
+                                <div>
+                                    <dt>Property type</dt>
+                                    <dd data-pp-quote-summary="_KindofPropertyQuoteFor">&mdash;</dd>
+                                </div>
+                                <div>
+                                    <dt>Estimated dogs</dt>
+                                    <dd data-pp-quote-summary="_ofDogs">&mdash;</dd>
+                                </div>
+                                <div>
+                                    <dt>Number of units</dt>
+                                    <dd data-pp-quote-summary="_ofUnits">&mdash;</dd>
+                                </div>
+                                <div>
+                                    <dt>Number of properties</dt>
+                                    <dd data-pp-quote-summary="_QuoteforHowManyProperties">&mdash;</dd>
+                                </div>
+                            </dl>
+                        </div>
+                        <p class="pp-quote-present__loading-note">Please wait while we review your information.</p>
                     </div>
                 </div>
             </form>
