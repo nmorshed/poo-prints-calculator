@@ -302,7 +302,6 @@ class Ajax {
                 'JobTitle'              => 'Job title is required.',
                 '_OwnerManager'         => 'Management company name is required.',
                 'StreetAddress1'        => 'Street address is required.',
-                'StreetAddress2'        => 'Address line 2 is required.',
                 'City'                  => 'City is required.',
                 'State'                 => 'State is required.',
                 'PostalCode'            => 'Postal code is required.',
@@ -334,7 +333,6 @@ class Ajax {
             '_ofDogs'                     => 'Estimated number of dogs is required.',
             '_ofUnits'                    => 'Number of units is required.',
             '_QuoteforHowManyProperties' => 'Please enter how many properties the dogs are for.',
-            '_QuoteComments'              => 'Comments are required.',
         ] );
 
         $allowed_property_types = $config['quote_type_options'] ?? [];

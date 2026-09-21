@@ -201,13 +201,17 @@
   var panels = Array.prototype.slice.call(root.querySelectorAll('[data-pp-quote-step]'));
   var dots = Array.prototype.slice.call(root.querySelectorAll('[data-pp-quote-step-dot]'));
   var notice = root.querySelector('[data-pp-quote-notice]');
-  var loading = root.querySelector('[data-pp-quote-loading]');
+  var decisionOverlay = root.querySelector('[data-pp-quote-decision]');
+  var decisionButton = root.querySelector('[data-pp-quote-decision-button]');
   var heroKicker = root.querySelector('[data-pp-quote-kicker]');
   var heroTitle = root.querySelector('[data-pp-quote-title]');
   var message = root.querySelector('[data-pp-quote-message]');
   var nextBtn = root.querySelector('[data-pp-quote-next]');
   var submitBtn = root.querySelector('[data-pp-quote-submit]');
   var currentStep = 2;
+  var decisionResult = null;
+  var decisionClickRequested = false;
+  var isContinuing = false;
 
   function showNotice(messageText, type) {
     if (!notice) return;
@@ -216,11 +220,15 @@
     if (messageText) notice.classList.add('is-visible', 'is-' + (type || 'info'));
   }
 
-  function setLoading(isLoading) {
-    if (loading) loading.hidden = !isLoading;
+  function showDecisionOverlay(isVisible) {
+    if (decisionOverlay) decisionOverlay.hidden = !isVisible;
     Array.prototype.slice.call(form.querySelectorAll('button')).forEach(function (field) {
-      field.disabled = isLoading;
+      if (field !== decisionButton) field.disabled = isVisible;
     });
+    if (decisionButton) {
+      decisionButton.disabled = false;
+      if (isVisible) decisionButton.focus();
+    }
   }
 
   function showStep(step) {
@@ -297,6 +305,21 @@
     showNotice('', 'info');
   }
 
+  function continueWithDecision() {
+    if (!decisionResult || isContinuing) return;
+
+    isContinuing = true;
+    if (decisionButton) decisionButton.disabled = true;
+
+    if (decisionResult.action === 'redirect' && decisionResult.url) {
+      window.location.href = decisionResult.url;
+      return;
+    }
+
+    showDecisionOverlay(false);
+    showMessage();
+  }
+
   if (nextBtn) {
     nextBtn.addEventListener('click', function () {
       if (!validateStep()) return;
@@ -321,22 +344,28 @@
     submitBtn.addEventListener('click', function () {
       if (!validateStep()) return;
 
-      setLoading(true);
+      decisionResult = null;
+      decisionClickRequested = false;
+      isContinuing = false;
+      showDecisionOverlay(true);
       showNotice('', 'info');
 
       submitStep(3).then(function (result) {
-        if (result.action === 'redirect' && result.url) {
-          window.location.href = result.url;
-          return;
-        }
-
-        setLoading(false);
-        showMessage();
+        decisionResult = result;
+        if (decisionClickRequested) continueWithDecision();
       }).catch(function (error) {
         console.error('PooPrints quote step 3 error:', error);
-        setLoading(false);
+        showDecisionOverlay(false);
         showNotice(error.message, 'error');
       });
+    });
+  }
+
+  if (decisionButton) {
+    decisionButton.addEventListener('click', function () {
+      decisionClickRequested = true;
+      if (!decisionResult) decisionButton.disabled = true;
+      continueWithDecision();
     });
   }
 

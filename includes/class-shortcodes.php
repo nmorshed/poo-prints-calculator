@@ -256,8 +256,8 @@ class Shortcodes {
                         <label class="pp-field pp-field--full">Street Address *
                             <input name="StreetAddress1" type="text" value="<?php echo esc_attr( $values['StreetAddress1'] ); ?>" placeholder="Street address" required>
                         </label>
-                        <label class="pp-field pp-field--full">Address Line 2 *
-                            <input name="StreetAddress2" type="text" value="<?php echo esc_attr( $values['StreetAddress2'] ); ?>" placeholder="Suite, Unit #, Leasing Office or ATTN:" required>
+                        <label class="pp-field pp-field--full">Address Line 2
+                            <input name="StreetAddress2" type="text" value="<?php echo esc_attr( $values['StreetAddress2'] ); ?>" placeholder="Suite, Unit #, Leasing Office or ATTN:">
                         </label>
                         <label class="pp-field pp-field--span-6">City *
                             <input name="City" type="text" value="<?php echo esc_attr( $values['City'] ); ?>" placeholder="City" required>
@@ -296,8 +296,8 @@ class Shortcodes {
                         <label class="pp-field pp-field--full">How Many Properties is the # of Dogs For? *
                             <input name="_QuoteforHowManyProperties" type="number" value="<?php echo esc_attr( $values['_QuoteforHowManyProperties'] ); ?>" min="1" step="1" required>
                         </label>
-                        <label class="pp-field pp-field--full">Comments *
-                            <textarea name="_QuoteComments" rows="5" required><?php echo esc_textarea( $values['_QuoteComments'] ); ?></textarea>
+                        <label class="pp-field pp-field--full">Comments
+                            <textarea name="_QuoteComments" rows="5"><?php echo esc_textarea( $values['_QuoteComments'] ); ?></textarea>
                         </label>
                     </div>
                     <button type="button" class="pp-quote-present__button" data-pp-quote-submit>Request My Free Quote</button>
@@ -313,12 +313,10 @@ class Shortcodes {
                 </section>
 
                 <div class="pp-form-v2__notice" data-pp-quote-notice role="status" aria-live="polite"></div>
-                <div class="pp-quote-present__loading" data-pp-quote-loading hidden>
-                    <div>
-                        <span aria-hidden="true"></span>
-                        <strong>Working on your quote...</strong>
-                        <p>Please wait while we review your information.</p>
-                    </div>
+                <div class="pp-quote-present__decision" data-pp-quote-decision hidden>
+                    <button type="button" class="pp-quote-present__decision-button" data-pp-quote-decision-button aria-label="Continue to your quote result">
+                        <img src="https://portal.pooprints.net/wp-content/uploads/2026/09/preparing-quote.jpg" alt="Your quote is being prepared. Click to continue.">
+                    </button>
                 </div>
             </form>
         </div>

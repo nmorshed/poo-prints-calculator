@@ -604,7 +604,7 @@
   max-width: 620px;
 }
 
-.pp-quote-present__loading {
+.pp-quote-present__decision {
   align-items: center;
   background: rgba(255, 255, 255, 0.86);
   bottom: 0;
@@ -617,46 +617,40 @@
   z-index: 9999;
 }
 
-.pp-quote-present__loading[hidden] {
+.pp-quote-present__decision[hidden] {
   display: none;
 }
 
-.pp-quote-present__loading div {
-  background: #fff;
-  border: 1px solid var(--ppq-border);
-  border-radius: 8px;
+.pp-quote-present__decision-button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
   box-shadow: 0 12px 34px rgba(15, 23, 42, 0.16);
-  max-width: 360px;
-  padding: 30px;
-  text-align: center;
+  cursor: pointer;
+  line-height: 0;
+  margin: 24px;
+  max-width: 720px;
+  padding: 0;
+  width: calc(100% - 48px);
 }
 
-.pp-quote-present__loading span {
-  animation: ppQuoteSpin 0.8s linear infinite;
-  border: 4px solid #fee2e2;
-  border-top-color: var(--ppq-red);
-  border-radius: 999px;
-  display: inline-block;
-  height: 44px;
-  margin-bottom: 16px;
-  width: 44px;
+.pp-quote-present__decision-button:focus-visible {
+  outline: 4px solid var(--ppq-red);
+  outline-offset: 5px;
 }
 
-.pp-quote-present__loading strong {
+.pp-quote-present__decision-button:disabled {
+  cursor: wait;
+  opacity: 0.92;
+}
+
+.pp-quote-present__decision-button img {
+  border-radius: 10px;
   display: block;
-  font-size: 20px;
-  margin-bottom: 6px;
-}
-
-.pp-quote-present__loading p {
-  color: var(--ppq-muted);
-  margin: 0;
-}
-
-@keyframes ppQuoteSpin {
-  to {
-    transform: rotate(360deg);
-  }
+  height: auto;
+  max-width: 100%;
+  width: 100%;
 }
 
 @media (max-width: 760px) {
