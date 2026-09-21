@@ -218,26 +218,8 @@
 
   function setLoading(isLoading) {
     if (loading) loading.hidden = !isLoading;
-    form.setAttribute('aria-busy', isLoading ? 'true' : 'false');
     Array.prototype.slice.call(form.querySelectorAll('button')).forEach(function (field) {
       field.disabled = isLoading;
-    });
-  }
-
-  function updateLoadingSummary() {
-    if (!loading) return;
-
-    var data = new FormData(form);
-    Array.prototype.slice.call(loading.querySelectorAll('[data-pp-quote-summary]')).forEach(function (output) {
-      var value = data.get(output.dataset.ppQuoteSummary);
-      output.textContent = value === null || String(value).trim() === '' ? '\u2014' : String(value).trim();
-    });
-  }
-
-  function waitForMinimumLoadingTime(startedAt) {
-    var remaining = Math.max(0, 3000 - (Date.now() - startedAt));
-    return new Promise(function (resolve) {
-      window.setTimeout(resolve, remaining);
     });
   }
 
@@ -339,27 +321,21 @@
     submitBtn.addEventListener('click', function () {
       if (!validateStep()) return;
 
-      updateLoadingSummary();
       setLoading(true);
-      var loadingStartedAt = Date.now();
       showNotice('', 'info');
 
       submitStep(3).then(function (result) {
-        return waitForMinimumLoadingTime(loadingStartedAt).then(function () {
-          if (result.action === 'redirect' && result.url) {
-            window.location.href = result.url;
-            return;
-          }
+        if (result.action === 'redirect' && result.url) {
+          window.location.href = result.url;
+          return;
+        }
 
-          setLoading(false);
-          showMessage();
-        });
+        setLoading(false);
+        showMessage();
       }).catch(function (error) {
-        return waitForMinimumLoadingTime(loadingStartedAt).then(function () {
-          console.error('PooPrints quote step 3 error:', error);
-          setLoading(false);
-          showNotice(error.message, 'error');
-        });
+        console.error('PooPrints quote step 3 error:', error);
+        setLoading(false);
+        showNotice(error.message, 'error');
       });
     });
   }

@@ -771,6 +771,7 @@ class Settings_Page {
             '[pooprints_sidenav menu="slug"]' => __( 'Same as [pooprints_sidenav] but uses a specific menu: WordPress menu ID, slug, or name (overrides the setting).', 'pooprints-calculator' ),
             '[pooprints_value key="..."]'  => __( 'Renders a live dynamic value span inside prose text. Alias: [pp_value key="..."]', 'pooprints-calculator' ),
             '[pooprints_value key="..." decimals="0"]' => __( 'Optional. Forces how many decimal places the value is shown with: decimals="0" renders 52 instead of 52.00, decimals="2" forces two places. Thousands separators are kept. Works on every value; values that are not plain numbers (for example "9,000+") are left exactly as they are. Live calculator values arrive already rounded, so decimals can remove places but adding places pads with zeros (roi_hours_saved_whole with decimals="2" shows 173.00; use roi_hours_saved for 173.33). Omit the attribute to keep the current formatting.', 'pooprints-calculator' ),
+            '[pooprints_value key="..." editable="yes"]' => __( 'Optional. Lets a visitor change the figure where it stands: minus and plus buttons appear beside it, and clicking the number lets them type a new one. Everything else on the page updates with it, including the ROI calculator, the Option 1 and 2 prices and the savings figures, and the change is added to the page address so it survives a refresh and travels with Forward Quote. Only these keys accept it: total_dogs, total_units, opt1_qty_swab, opt1_qty_waste, opt2_qty_swab. On any other key the attribute is ignored. The page must also contain the matching calculator ([pooprints_roi] for total_dogs and total_units, [pooprints_option1] or [pooprints_option2] for the kit quantities); without it the number stays plain text. Note the buttons need roughly 45px of width, so in a very narrow column the words after the number may wrap to a second line.', 'pooprints-calculator' ),
             '[pooprints_form_v2]'         => __( 'Renders the four-step PooPrints Form v2 order form with Keap field updates, ContactNotes, and stage tags.', 'pooprints-calculator' ),
             '[pooprints_fine_tables]'      => __( 'Renders both fine reference tables side by side (breakeven + profit/loss).', 'pooprints-calculator' ),
             '[pooprints_fine_tables show="breakeven"]' => __( 'Renders only the Breakeven Fine Amount table.', 'pooprints-calculator' ),
@@ -893,6 +894,14 @@ class Settings_Page {
             </p>
 
             <p><?php esc_html_e( 'Any value also accepts decimals="…" to set the number of decimal places, e.g. decimals="0".', 'pooprints-calculator' ); ?></p>
+
+            <p><?php
+                printf(
+                    /* translators: %s: the five key names that accept editable="yes". */
+                    esc_html__( 'These five keys also accept editable="yes", which lets a visitor change the figure on the page and updates everything else with it: %s. The page needs the matching calculator on it as well.', 'pooprints-calculator' ),
+                    '<code>total_dogs</code>, <code>total_units</code>, <code>opt1_qty_swab</code>, <code>opt1_qty_waste</code>, <code>opt2_qty_swab</code>'
+                );
+            ?></p>
 
             <table class="widefat striped" style="margin-top: 12px;">
                 <thead>

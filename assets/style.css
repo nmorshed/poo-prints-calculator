@@ -804,3 +804,84 @@
   .pp-ft-table tbody td,
   .pp-ft-table thead th { padding: 8px 10px; font-size: 13px; }
 }
+
+/* ============================================================
+   EDITABLE VALUES — [pooprints_value key="…" editable="yes"]
+   Everything here inherits font, size and colour from whatever the
+   number is sitting in, so the control looks native on a black hero
+   and in a white card without per-page styling. Nothing outside
+   .pp-editable is touched.
+   ============================================================ */
+.pp-editable {
+  font: inherit;
+  color: inherit;
+}
+/* Only the JS-activated state gets the controls. A wrapper whose
+   calculator field is missing stays plain text. */
+/* Deliberately NOT inline-flex: a flex box takes its baseline from its first
+   item, which would be the minus button, dropping the digits off the line the
+   surrounding words sit on. Plain inline keeps the number as ordinary text, so
+   it shares the baseline of whatever follows it. */
+.pp-editable.is-editable {
+  display: inline;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.pp-editable.is-editable:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+/* Always visible, so the control is as obvious on a phone as on a
+   desktop. Kept small and low contrast so it reads as a control
+   beside the number, not as part of the figure. */
+.pp-editable__step {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 0.14em;
+  font-family: inherit;
+  font-size: 0.42em;
+  font-weight: 600;
+  line-height: 1;
+  color: inherit;
+  background: none;
+  border: 1px solid currentColor;
+  border-radius: 0.25em;
+  padding: 0.18em 0.3em;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.12s ease;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+.pp-editable.is-editable:hover .pp-editable__step,
+.pp-editable.is-editable:focus-within .pp-editable__step {
+  opacity: 0.8;
+}
+.pp-editable__step:hover { opacity: 1; }
+/* The typed field must be indistinguishable from the number it replaces. */
+.pp-editable__input {
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 2ch;
+  text-align: inherit;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.pp-editable__input:focus { outline: none; }
+.pp-editable__input::-webkit-outer-spin-button,
+.pp-editable__input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+@media print {
+  .pp-editable__step { display: none; }
+}

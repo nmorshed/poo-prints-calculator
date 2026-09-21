@@ -148,6 +148,10 @@ document.addEventListener('DOMContentLoaded', function () {
     if (swabEl && dogsEl) dogsEl.value = swabEl.value;
     calcOption1();
     calcOption2();
+    // Reset writes the fields directly, firing no events, so the editable values
+    // have to be told: otherwise their announced value and the URL keep the old
+    // number while the page shows the default.
+    refreshEditables();
   };
 
   window.toggleSection = function (sectionId, arrowEl) {
@@ -362,12 +366,10 @@ document.addEventListener('DOMContentLoaded', function () {
   /* ============================================================
      WIRE UP INPUTS
      ============================================================ */
-  ['o1_qty_swab', 'o1_qty_waste'].forEach(function (id) {
-    var el = document.getElementById(id);
-    if (el) el.addEventListener('input', calcOption1);
-  });
-
-  // Sync o1_qty_swab ↔ dogs (ROI Total # of Dogs)
+  // Sync o1_qty_swab ↔ dogs (ROI Total # of Dogs). Registered BEFORE calcOption1
+  // below: listeners fire in the order they are added, so dogs has to be updated
+  // first or calcROI() paints total_dogs and every ROI figure from the previous
+  // value, leaving the page one edit behind.
   var o1SwabEl = document.getElementById('o1_qty_swab');
   var dogsEl   = document.getElementById('dogs');
   if (o1SwabEl && dogsEl) {
@@ -379,6 +381,11 @@ document.addEventListener('DOMContentLoaded', function () {
       calcOption1();
     });
   }
+
+  ['o1_qty_swab', 'o1_qty_waste'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('input', calcOption1);
+  });
 
   var o2el = document.getElementById('o2_qty_swab');
   if (o2el) o2el.addEventListener('input', calcOption2);
@@ -472,6 +479,170 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
     */
+
+  /* ============================================================
+     EDITABLE VALUES — [pooprints_value key="…" editable="yes"]
+
+     PHP wraps the value span in .pp-editable[data-pp-edits="<input id>"]. The
+     controls go around that span, never inside it: setByKey() owns its
+     textContent and would wipe anything nested there on the next repaint.
+
+     Committing does one thing only — write the calculator input and fire the
+     same 'input' event a keystroke fires. Every sum downstream is the existing
+     one, so there is no second calculation path to drift out of step.
+     ============================================================ */
+  // Filled in by initEditableValues() below. Anything that changes a calculator
+  // field without firing an event (Reset) must call refreshEditables() after.
+  var editableRefreshers = [];
+  function refreshEditables() {
+    editableRefreshers.forEach(function (fn) { fn(); });
+  }
+
+  (function initEditableValues() {
+    var wraps = document.querySelectorAll('.pp-editable[data-pp-edits]');
+    if (!wraps.length) return;
+
+    wraps.forEach(function (wrap) {
+      var target  = document.getElementById(wrap.getAttribute('data-pp-edits'));
+      var valueEl = wrap.querySelector('[data-pp-key]');
+
+      // No calculator field on this page: leave the number as plain text rather
+      // than advertise a control that cannot do anything.
+      if (!target || !valueEl) return;
+
+      var param = wrap.getAttribute('data-pp-edits'); // FIELD_MAP key IS the input id
+      var min   = parseInt(wrap.getAttribute('data-pp-min'), 10);
+      var max   = parseInt(wrap.getAttribute('data-pp-max'), 10);
+      if (isNaN(min)) min = 0;
+      if (isNaN(max)) max = 10000;
+
+      var label = (valueEl.getAttribute('data-pp-key') || 'value').replace(/_/g, ' ');
+
+      function current() {
+        var n = parseInt(target.value, 10);
+        return isNaN(n) ? min : n;
+      }
+
+      function commit(n) {
+        if (isNaN(n)) return;
+        n = Math.min(Math.max(n, min), max);
+        if (n !== current()) {
+          target.value = n;
+          target.dispatchEvent(new Event('input', { bubbles: true }));
+          syncURL(n);
+        }
+        wrap.setAttribute('aria-valuenow', n);
+      }
+
+      // Put the edit in the address bar so it survives a refresh, a bookmark and
+      // the Forward Quote button, which reads the current URL.
+      function syncURL(n) {
+        if (!window.history || !history.replaceState) return;
+        try {
+          var url   = new URL(window.location.href);
+          var entry = FIELD_MAP[param];
+          if (entry && String(n) === String(entry.default)) {
+            url.searchParams.delete(param);
+          } else {
+            url.searchParams.set(param, n);
+          }
+          history.replaceState(null, '', url.pathname + url.search + url.hash);
+        } catch (e) { /* older browser: the number still works, it just won't travel */ }
+      }
+
+      function openEditor() {
+        if (wrap.querySelector('.pp-editable__input')) return;
+
+        var input = document.createElement('input');
+        input.type      = 'number';
+        input.inputMode = 'numeric';
+        input.className = 'pp-editable__input';
+        input.min       = min;
+        input.max       = max;
+        input.value     = current();
+        input.setAttribute('aria-label', label);
+        input.style.width = Math.max(String(current()).length, 2) + 'ch';
+
+        valueEl.style.display = 'none';
+        wrap.insertBefore(input, valueEl);
+        input.focus();
+        input.select();
+
+        // Removing a focused element fires blur synchronously, which calls this
+        // again mid-removal, so guard re-entry rather than rely on parentNode.
+        var closing = false;
+        function close(save) {
+          if (closing || !input.parentNode) return;
+          closing = true;
+          var n = parseInt(input.value, 10);
+          input.parentNode.removeChild(input);
+          valueEl.style.display = '';
+          if (save) commit(n);
+        }
+
+        input.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') { e.preventDefault(); close(true); wrap.focus(); }
+          else if (e.key === 'Escape') { e.preventDefault(); close(false); wrap.focus(); }
+        });
+        input.addEventListener('blur', function () { close(true); });
+      }
+
+      function makeButton(glyph, aria, delta, modifier) {
+        var b = document.createElement('button');
+        b.type      = 'button';
+        b.className = 'pp-editable__step pp-editable__step--' + modifier;
+        b.tabIndex  = -1; // the wrapper is the keyboard control, via arrow keys
+        b.setAttribute('aria-label', aria + ' ' + label);
+        b.textContent = glyph;
+
+        var delay, repeat;
+        function stop() { clearTimeout(delay); clearInterval(repeat); }
+
+        b.addEventListener('pointerdown', function (e) {
+          e.preventDefault(); // keeps focus off the button so :focus-within stays put
+          commit(current() + delta);
+          delay = setTimeout(function () {
+            repeat = setInterval(function () { commit(current() + delta); }, 80);
+          }, 400);
+        });
+        ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) {
+          b.addEventListener(ev, stop);
+        });
+        window.addEventListener('pointerup', stop);
+
+        return b;
+      }
+
+      wrap.classList.add('is-editable');
+      wrap.setAttribute('tabindex', '0');
+      wrap.setAttribute('role', 'spinbutton');
+      wrap.setAttribute('aria-label', label);
+      wrap.setAttribute('aria-valuemin', min);
+      wrap.setAttribute('aria-valuemax', max);
+      wrap.setAttribute('aria-valuenow', current());
+
+      wrap.insertBefore(makeButton('−', 'Decrease', -1, 'minus'), valueEl);
+      wrap.appendChild(makeButton('+', 'Increase', 1, 'plus'));
+
+      valueEl.addEventListener('click', openEditor);
+
+      wrap.addEventListener('keydown', function (e) {
+        if (e.target !== wrap) return; // let the open editor handle its own keys
+        if (e.key === 'ArrowUp')        { e.preventDefault(); commit(current() + 1); }
+        else if (e.key === 'ArrowDown') { e.preventDefault(); commit(current() - 1); }
+        else if (e.key === 'Enter' || /^[0-9]$/.test(e.key)) { e.preventDefault(); openEditor(); }
+      });
+
+      // Keep the announced value and the URL current when the figure is moved
+      // from somewhere else, such as the calculator's own field.
+      function refresh() {
+        wrap.setAttribute('aria-valuenow', current());
+        syncURL(current());
+      }
+      target.addEventListener('input', refresh);
+      editableRefreshers.push(refresh);
+    });
+  })();
 
   /* ============================================================
      INITIAL RENDER

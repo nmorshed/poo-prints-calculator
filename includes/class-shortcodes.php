@@ -313,36 +313,11 @@ class Shortcodes {
                 </section>
 
                 <div class="pp-form-v2__notice" data-pp-quote-notice role="status" aria-live="polite"></div>
-                <div class="pp-quote-present__loading" data-pp-quote-loading role="dialog" aria-modal="true" aria-labelledby="pp-quote-loading-title" aria-describedby="pp-quote-loading-status" hidden>
-                    <div class="pp-quote-present__loading-card">
-                        <div class="pp-quote-present__loading-rule" aria-hidden="true"></div>
-                        <div class="pp-quote-present__loading-status" id="pp-quote-loading-status" role="status" aria-live="polite">
-                            <span class="pp-quote-present__spinner" aria-hidden="true"></span>
-                            <span>Working on your quote...</span>
-                        </div>
-                        <h2 id="pp-quote-loading-title">Review your submitted information</h2>
-                        <div class="pp-quote-present__summary">
-                            <div class="pp-quote-present__summary-title">Property Information</div>
-                            <dl>
-                                <div>
-                                    <dt>Property type</dt>
-                                    <dd data-pp-quote-summary="_KindofPropertyQuoteFor">&mdash;</dd>
-                                </div>
-                                <div>
-                                    <dt>Estimated dogs</dt>
-                                    <dd data-pp-quote-summary="_ofDogs">&mdash;</dd>
-                                </div>
-                                <div>
-                                    <dt>Number of units</dt>
-                                    <dd data-pp-quote-summary="_ofUnits">&mdash;</dd>
-                                </div>
-                                <div>
-                                    <dt>Number of properties</dt>
-                                    <dd data-pp-quote-summary="_QuoteforHowManyProperties">&mdash;</dd>
-                                </div>
-                            </dl>
-                        </div>
-                        <p class="pp-quote-present__loading-note">Please wait while we review your information.</p>
+                <div class="pp-quote-present__loading" data-pp-quote-loading hidden>
+                    <div>
+                        <span aria-hidden="true"></span>
+                        <strong>Working on your quote...</strong>
+                        <p>Please wait while we review your information.</p>
                     </div>
                 </div>
             </form>
@@ -861,7 +836,7 @@ class Shortcodes {
     public static function render_value( $atts ) {
         self::$enqueue_assets = true;
 
-        $atts = shortcode_atts( [ 'key' => '', 'decimals' => '' ], $atts, 'pooprints_value' );
+        $atts = shortcode_atts( [ 'key' => '', 'decimals' => '', 'editable' => '' ], $atts, 'pooprints_value' );
         $key  = sanitize_key( $atts['key'] );
 
         // Null means "not specified" — that path must stay byte-identical to pre-1.2.3 output.
@@ -941,11 +916,42 @@ class Shortcodes {
         }
 
         // Calculator keys: main.js fills these in, so pass decimals on for it to apply.
-        return sprintf(
+        $span = sprintf(
             '<span data-pp-key="%s"%s>—</span>',
             esc_attr( $key ),
             null === $decimals ? '' : sprintf( ' data-pp-decimals="%d"', $decimals )
         );
+
+        // editable="yes" wraps the span so a visitor can change the figure where it stands.
+        // main.js adds the controls; the span itself is left alone because setByKey() owns it.
+        // Anything not in editable_keys() falls through unwrapped, byte-identical to before.
+        $editable = self::editable_keys();
+        if ( '' !== $atts['editable'] && filter_var( $atts['editable'], FILTER_VALIDATE_BOOLEAN ) && isset( $editable[ $key ] ) ) {
+            return sprintf(
+                '<span class="pp-editable" data-pp-edits="%s" data-pp-min="%d" data-pp-max="%d">%s</span>',
+                esc_attr( $editable[ $key ][0] ),
+                $editable[ $key ][1],
+                $editable[ $key ][2],
+                $span
+            );
+        }
+
+        return $span;
+    }
+
+    /**
+     * Display keys a visitor may edit in place, mapped to [ input id, min, max ].
+     * The input id is the calculator field the edit is written into; everything
+     * else on the page already mirrors that field.
+     */
+    private static function editable_keys() {
+        return [
+            'total_dogs'     => [ 'dogs',         0, 10000 ],
+            'total_units'    => [ 'units',        0, 10000 ],
+            'opt1_qty_swab'  => [ 'o1_qty_swab',  0, 10000 ],
+            'opt1_qty_waste' => [ 'o1_qty_waste', 0, 10000 ],
+            'opt2_qty_swab'  => [ 'o2_qty_swab',  0, 10000 ],
+        ];
     }
 
     /* ----------------------------------------------------------------
