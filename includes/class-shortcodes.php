@@ -314,12 +314,15 @@ class Shortcodes {
 
                 <div class="pp-form-v2__notice" data-pp-quote-notice role="status" aria-live="polite"></div>
                 <div class="pp-quote-present__decision" data-pp-quote-decision hidden>
-                    <button type="button" class="pp-quote-present__decision-button" data-pp-quote-decision-button aria-label="Your quote is being prepared" disabled>
-                        <span class="pp-quote-present__decision-progress" data-pp-quote-decision-progress role="progressbar" aria-label="Preparing your quote" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-                            <span data-pp-quote-decision-progress-fill></span>
-                        </span>
-                        <img src="https://portal.pooprints.net/wp-content/uploads/2026/09/preparing-quote.jpg" alt="Your quote is being prepared. Click to continue.">
-                    </button>
+                    <div class="pp-quote-present__decision-card">
+                        <a class="pp-quote-present__decision-image-link" data-pp-quote-decision-link aria-label="Your quote is being prepared" aria-disabled="true" tabindex="-1">
+                            <span class="pp-quote-present__decision-progress" data-pp-quote-decision-progress role="progressbar" aria-label="Preparing your quote" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                                <span data-pp-quote-decision-progress-fill></span>
+                            </span>
+                            <img src="https://portal.pooprints.net/wp-content/uploads/2026/09/preparing-quote.jpg" alt="Your quote is being prepared. Continue when ready.">
+                        </a>
+                        <a class="pp-quote-present__decision-cta" data-pp-quote-decision-cta hidden>See My Quote</a>
+                    </div>
                 </div>
             </form>
         </div>

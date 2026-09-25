@@ -414,6 +414,10 @@
   margin: 0;
 }
 
+.pp-quote-present__hero h1 {
+  font-size: clamp(36px, 5vw, 56px);
+}
+
 .pp-quote-present__steps {
   align-items: start;
   display: grid;
@@ -621,30 +625,39 @@
   display: none;
 }
 
-.pp-quote-present__decision-button {
-  appearance: none;
-  background: transparent;
-  border: 0;
-  border-radius: 10px;
-  box-shadow: 0 12px 34px rgba(15, 23, 42, 0.16);
-  cursor: pointer;
-  line-height: 0;
+.pp-quote-present__decision-card {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
   margin: 24px;
   max-width: 720px;
-  overflow: hidden;
-  padding: 0;
-  position: relative;
   width: calc(100% - 48px);
 }
 
-.pp-quote-present__decision-button:focus-visible {
+.pp-quote-present__decision-image-link {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 12px 34px rgba(15, 23, 42, 0.16);
+  display: block;
+  line-height: 0;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.pp-quote-present__decision-image-link[href] {
+  cursor: pointer;
+}
+
+.pp-quote-present__decision-image-link:focus-visible,
+.pp-quote-present__decision-cta:focus-visible {
   outline: 4px solid var(--ppq-red);
   outline-offset: 5px;
 }
 
-.pp-quote-present__decision-button:disabled {
+.pp-quote-present__decision-image-link[aria-disabled="true"] {
   cursor: wait;
-  opacity: 1;
+  pointer-events: none;
 }
 
 .pp-quote-present__decision-progress {
@@ -668,12 +681,38 @@
   width: 0;
 }
 
-.pp-quote-present__decision-button img {
+.pp-quote-present__decision-image-link img {
   border-radius: 10px;
   display: block;
   height: auto;
   max-width: 100%;
   width: 100%;
+}
+
+.pp-quote-present__decision-cta {
+  background: #e11d2d;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(225, 29, 45, 0.24);
+  color: #fff;
+  display: inline-flex;
+  font-size: 17px;
+  font-weight: 800;
+  justify-content: center;
+  line-height: 1.2;
+  margin-top: 20px;
+  min-width: 190px;
+  padding: 14px 28px;
+  text-decoration: none;
+}
+
+.pp-quote-present__decision-cta:hover {
+  background: #bd1624;
+  color: #fff;
+  text-decoration: none;
+}
+
+.pp-quote-present__decision-cta[hidden] {
+  display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -683,7 +722,6 @@
 }
 
 @media (max-width: 760px) {
-  .pp-quote-present__hero h1,
   .pp-quote-present__message-hero h2 {
     font-size: 42px;
   }

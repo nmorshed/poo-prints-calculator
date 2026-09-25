@@ -202,7 +202,8 @@
   var dots = Array.prototype.slice.call(root.querySelectorAll('[data-pp-quote-step-dot]'));
   var notice = root.querySelector('[data-pp-quote-notice]');
   var decisionOverlay = root.querySelector('[data-pp-quote-decision]');
-  var decisionButton = root.querySelector('[data-pp-quote-decision-button]');
+  var decisionLink = root.querySelector('[data-pp-quote-decision-link]');
+  var decisionCta = root.querySelector('[data-pp-quote-decision-cta]');
   var decisionProgress = root.querySelector('[data-pp-quote-decision-progress]');
   var decisionProgressFill = root.querySelector('[data-pp-quote-decision-progress-fill]');
   var heroKicker = root.querySelector('[data-pp-quote-kicker]');
@@ -214,8 +215,12 @@
   var decisionResult = null;
   var decisionProgressValue = 0;
   var decisionProgressTimer = null;
+  var decisionMinimumTimer = null;
   var decisionReadyTimer = null;
+  var decisionStartedAt = 0;
+  var decisionMinimumElapsed = false;
   var isContinuing = false;
+  var decisionMinimumDuration = 6000;
 
   function showNotice(messageText, type) {
     if (!notice) return;
@@ -227,13 +232,40 @@
   function showDecisionOverlay(isVisible) {
     if (decisionOverlay) decisionOverlay.hidden = !isVisible;
     Array.prototype.slice.call(form.querySelectorAll('button')).forEach(function (field) {
-      if (field !== decisionButton) field.disabled = isVisible;
+      field.disabled = isVisible;
     });
-    if (decisionButton) {
-      decisionButton.disabled = isVisible;
-      decisionButton.setAttribute('aria-label', isVisible ? 'Your quote is being prepared' : 'Continue to your quote result');
-    }
     if (decisionOverlay) decisionOverlay.setAttribute('aria-busy', isVisible ? 'true' : 'false');
+  }
+
+  function resetDecisionLinks() {
+    [decisionLink, decisionCta].forEach(function (link) {
+      if (!link) return;
+      link.removeAttribute('href');
+      link.setAttribute('aria-disabled', 'true');
+      link.setAttribute('tabindex', '-1');
+    });
+    if (decisionLink) decisionLink.setAttribute('aria-label', 'Your quote is being prepared');
+    if (decisionCta) decisionCta.hidden = true;
+  }
+
+  function enableDecisionLinks() {
+    if (!decisionResult) return;
+
+    var destination = decisionResult.action === 'redirect' && decisionResult.url
+      ? decisionResult.url
+      : '#quote-result';
+
+    [decisionLink, decisionCta].forEach(function (link) {
+      if (!link) return;
+      link.setAttribute('href', destination);
+      link.removeAttribute('aria-disabled');
+      link.removeAttribute('tabindex');
+    });
+    if (decisionLink) decisionLink.setAttribute('aria-label', 'See my quote');
+    if (decisionCta) {
+      decisionCta.hidden = false;
+      decisionCta.focus();
+    }
   }
 
   function setDecisionProgress(value) {
@@ -244,21 +276,34 @@
 
   function clearDecisionTimers() {
     if (decisionProgressTimer) window.clearInterval(decisionProgressTimer);
+    if (decisionMinimumTimer) window.clearTimeout(decisionMinimumTimer);
     if (decisionReadyTimer) window.clearTimeout(decisionReadyTimer);
     decisionProgressTimer = null;
+    decisionMinimumTimer = null;
     decisionReadyTimer = null;
   }
 
   function startDecisionProgress() {
     clearDecisionTimers();
+    decisionStartedAt = Date.now();
+    decisionMinimumElapsed = false;
     setDecisionProgress(0);
+    resetDecisionLinks();
     decisionProgressTimer = window.setInterval(function () {
-      if (decisionProgressValue >= 90) return;
-      setDecisionProgress(decisionProgressValue + Math.max(1, Math.ceil((90 - decisionProgressValue) * 0.16)));
-    }, 350);
+      var elapsed = Date.now() - decisionStartedAt;
+      setDecisionProgress(Math.min(90, (elapsed / decisionMinimumDuration) * 90));
+    }, 100);
+    decisionMinimumTimer = window.setTimeout(function () {
+      decisionMinimumTimer = null;
+      decisionMinimumElapsed = true;
+      setDecisionProgress(90);
+      completeDecisionProgress();
+    }, decisionMinimumDuration);
   }
 
   function completeDecisionProgress() {
+    if (!decisionMinimumElapsed || !decisionResult || isContinuing) return;
+
     if (decisionProgressTimer) window.clearInterval(decisionProgressTimer);
     decisionProgressTimer = null;
     setDecisionProgress(100);
@@ -268,11 +313,7 @@
       decisionReadyTimer = null;
       if (!decisionResult || isContinuing) return;
       if (decisionOverlay) decisionOverlay.setAttribute('aria-busy', 'false');
-      if (decisionButton) {
-        decisionButton.disabled = false;
-        decisionButton.setAttribute('aria-label', 'Continue to your quote result');
-        decisionButton.focus();
-      }
+      enableDecisionLinks();
     }, reducedMotion ? 0 : 320);
   }
 
@@ -354,7 +395,7 @@
     if (!decisionResult || isContinuing) return;
 
     isContinuing = true;
-    if (decisionButton) decisionButton.disabled = true;
+    resetDecisionLinks();
 
     if (decisionResult.action === 'redirect' && decisionResult.url) {
       window.location.href = decisionResult.url;
@@ -402,17 +443,21 @@
         console.error('PooPrints quote step 3 error:', error);
         clearDecisionTimers();
         setDecisionProgress(0);
+        resetDecisionLinks();
         showDecisionOverlay(false);
         showNotice(error.message, 'error');
       });
     });
   }
 
-  if (decisionButton) {
-    decisionButton.addEventListener('click', function () {
+  [decisionLink, decisionCta].forEach(function (link) {
+    if (!link) return;
+    link.addEventListener('click', function (event) {
+      event.preventDefault();
+      if (link.getAttribute('aria-disabled') === 'true') return;
       continueWithDecision();
     });
-  }
+  });
 
   showStep(2);
 })();
