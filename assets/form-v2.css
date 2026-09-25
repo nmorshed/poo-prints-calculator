@@ -631,7 +631,9 @@
   line-height: 0;
   margin: 24px;
   max-width: 720px;
+  overflow: hidden;
   padding: 0;
+  position: relative;
   width: calc(100% - 48px);
 }
 
@@ -642,7 +644,28 @@
 
 .pp-quote-present__decision-button:disabled {
   cursor: wait;
-  opacity: 0.92;
+  opacity: 1;
+}
+
+.pp-quote-present__decision-progress {
+  background: rgba(255, 255, 255, 0.72);
+  display: block;
+  height: 8px;
+  left: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 1;
+}
+
+.pp-quote-present__decision-progress span {
+  background: var(--ppq-red);
+  display: block;
+  height: 100%;
+  transition: width 0.3s ease;
+  width: 0;
 }
 
 .pp-quote-present__decision-button img {
@@ -651,6 +674,12 @@
   height: auto;
   max-width: 100%;
   width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pp-quote-present__decision-progress span {
+    transition: none;
+  }
 }
 
 @media (max-width: 760px) {

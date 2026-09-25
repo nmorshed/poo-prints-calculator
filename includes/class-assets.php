@@ -17,41 +17,54 @@ class Assets {
             'pooprints-calculator',
             POOPRINTS_URL . 'assets/style.css',
             [],
-            POOPRINTS_VERSION
+            self::asset_version( 'assets/style.css' )
         );
         wp_register_style(
             'pooprints-get-started',
             POOPRINTS_URL . 'assets/get-started.css',
             [],
-            POOPRINTS_VERSION
+            self::asset_version( 'assets/get-started.css' )
         );
         wp_register_style(
             'pooprints-form-v2',
             POOPRINTS_URL . 'assets/form-v2.css',
             [],
-            POOPRINTS_VERSION
+            self::asset_version( 'assets/form-v2.css' )
         );
         wp_register_script(
             'pooprints-calculator',
             POOPRINTS_URL . 'assets/main.js',
             [],
-            POOPRINTS_VERSION,
+            self::asset_version( 'assets/main.js' ),
             true
         );
         wp_register_script(
             'pooprints-get-started',
             POOPRINTS_URL . 'assets/get-started.js',
             [],
-            POOPRINTS_VERSION,
+            self::asset_version( 'assets/get-started.js' ),
             true
         );
         wp_register_script(
             'pooprints-form-v2',
             POOPRINTS_URL . 'assets/form-v2.js',
             [],
-            POOPRINTS_VERSION,
+            self::asset_version( 'assets/form-v2.js' ),
             true
         );
+    }
+
+    /**
+     * Use a stable per-file version that changes automatically after deployment.
+     */
+    private static function asset_version( $relative_path ) {
+        $path = POOPRINTS_DIR . ltrim( $relative_path, '/' );
+        if ( ! is_file( $path ) ) {
+            return POOPRINTS_VERSION;
+        }
+
+        $modified = filemtime( $path );
+        return false !== $modified ? (string) $modified : POOPRINTS_VERSION;
     }
 
     public static function maybe_enqueue() {

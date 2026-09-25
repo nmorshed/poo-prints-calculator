@@ -203,6 +203,8 @@
   var notice = root.querySelector('[data-pp-quote-notice]');
   var decisionOverlay = root.querySelector('[data-pp-quote-decision]');
   var decisionButton = root.querySelector('[data-pp-quote-decision-button]');
+  var decisionProgress = root.querySelector('[data-pp-quote-decision-progress]');
+  var decisionProgressFill = root.querySelector('[data-pp-quote-decision-progress-fill]');
   var heroKicker = root.querySelector('[data-pp-quote-kicker]');
   var heroTitle = root.querySelector('[data-pp-quote-title]');
   var message = root.querySelector('[data-pp-quote-message]');
@@ -210,7 +212,9 @@
   var submitBtn = root.querySelector('[data-pp-quote-submit]');
   var currentStep = 2;
   var decisionResult = null;
-  var decisionClickRequested = false;
+  var decisionProgressValue = 0;
+  var decisionProgressTimer = null;
+  var decisionReadyTimer = null;
   var isContinuing = false;
 
   function showNotice(messageText, type) {
@@ -226,9 +230,50 @@
       if (field !== decisionButton) field.disabled = isVisible;
     });
     if (decisionButton) {
-      decisionButton.disabled = false;
-      if (isVisible) decisionButton.focus();
+      decisionButton.disabled = isVisible;
+      decisionButton.setAttribute('aria-label', isVisible ? 'Your quote is being prepared' : 'Continue to your quote result');
     }
+    if (decisionOverlay) decisionOverlay.setAttribute('aria-busy', isVisible ? 'true' : 'false');
+  }
+
+  function setDecisionProgress(value) {
+    decisionProgressValue = Math.max(0, Math.min(100, Math.round(value)));
+    if (decisionProgress) decisionProgress.setAttribute('aria-valuenow', String(decisionProgressValue));
+    if (decisionProgressFill) decisionProgressFill.style.width = decisionProgressValue + '%';
+  }
+
+  function clearDecisionTimers() {
+    if (decisionProgressTimer) window.clearInterval(decisionProgressTimer);
+    if (decisionReadyTimer) window.clearTimeout(decisionReadyTimer);
+    decisionProgressTimer = null;
+    decisionReadyTimer = null;
+  }
+
+  function startDecisionProgress() {
+    clearDecisionTimers();
+    setDecisionProgress(0);
+    decisionProgressTimer = window.setInterval(function () {
+      if (decisionProgressValue >= 90) return;
+      setDecisionProgress(decisionProgressValue + Math.max(1, Math.ceil((90 - decisionProgressValue) * 0.16)));
+    }, 350);
+  }
+
+  function completeDecisionProgress() {
+    if (decisionProgressTimer) window.clearInterval(decisionProgressTimer);
+    decisionProgressTimer = null;
+    setDecisionProgress(100);
+
+    var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    decisionReadyTimer = window.setTimeout(function () {
+      decisionReadyTimer = null;
+      if (!decisionResult || isContinuing) return;
+      if (decisionOverlay) decisionOverlay.setAttribute('aria-busy', 'false');
+      if (decisionButton) {
+        decisionButton.disabled = false;
+        decisionButton.setAttribute('aria-label', 'Continue to your quote result');
+        decisionButton.focus();
+      }
+    }, reducedMotion ? 0 : 320);
   }
 
   function showStep(step) {
@@ -345,16 +390,18 @@
       if (!validateStep()) return;
 
       decisionResult = null;
-      decisionClickRequested = false;
       isContinuing = false;
       showDecisionOverlay(true);
+      startDecisionProgress();
       showNotice('', 'info');
 
       submitStep(3).then(function (result) {
         decisionResult = result;
-        if (decisionClickRequested) continueWithDecision();
+        completeDecisionProgress();
       }).catch(function (error) {
         console.error('PooPrints quote step 3 error:', error);
+        clearDecisionTimers();
+        setDecisionProgress(0);
         showDecisionOverlay(false);
         showNotice(error.message, 'error');
       });
@@ -363,8 +410,6 @@
 
   if (decisionButton) {
     decisionButton.addEventListener('click', function () {
-      decisionClickRequested = true;
-      if (!decisionResult) decisionButton.disabled = true;
       continueWithDecision();
     });
   }
