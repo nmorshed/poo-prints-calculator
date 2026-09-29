@@ -6,12 +6,98 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 class Ajax {
 
     public static function init() {
+        add_action( 'wp_ajax_pooprints_place_order', [ __CLASS__, 'place_order' ] );
+        add_action( 'wp_ajax_nopriv_pooprints_place_order', [ __CLASS__, 'place_order' ] );
         // @future: waiting for client to confirm unit count is needed to update Keap field.
         // add_action( 'wp_ajax_pooprints_update_units', [ __CLASS__, 'update_units' ] );
         add_action( 'wp_ajax_pooprints_form_v2_submit', [ __CLASS__, 'submit_form_v2' ] );
         add_action( 'wp_ajax_nopriv_pooprints_form_v2_submit', [ __CLASS__, 'submit_form_v2' ] );
         add_action( 'wp_ajax_which_quote_to_present_submit', [ __CLASS__, 'submit_which_quote_to_present' ] );
         add_action( 'wp_ajax_nopriv_which_quote_to_present_submit', [ __CLASS__, 'submit_which_quote_to_present' ] );
+    }
+
+    /** Handle the independent #pp-place-order link on the Get Started page. */
+    public static function place_order() {
+        if ( ! is_user_logged_in() || ! check_ajax_referer( 'pooprints_place_order', 'nonce', false ) ) {
+            wp_send_json_error( [ 'message' => 'Please sign in and refresh the page before placing your order.' ] );
+        }
+        foreach ( [ 'memb_getContactId', 'memb_getContactField', 'memb_setContactField', 'memb_setTags' ] as $function ) {
+            if ( ! function_exists( $function ) ) {
+                wp_send_json_error( [ 'message' => 'Memberium is unavailable. Please try again later.' ] );
+            }
+        }
+        $contact_id = (int) memb_getContactId();
+        if ( $contact_id <= 0 ) {
+            wp_send_json_error( [ 'message' => 'Your account is not linked to a Keap contact.' ] );
+        }
+        $values = [];
+        foreach ( [ 'amount', 'option', 'o1_qty_swab', 'o1_qty_waste', 'o2_qty_swab', 'request_id' ] as $key ) {
+            $values[ $key ] = isset( $_POST[ $key ] ) && is_string( $_POST[ $key ] ) ? trim( wp_unslash( $_POST[ $key ] ) ) : '';
+        }
+        if ( ! in_array( $values['option'], [ 'full', 'phased' ], true ) ||
+            ! preg_match( '/^\$[0-9]{1,9}(?:,[0-9]{3})*(?:\.[0-9]{2})?(?:\/month)?$/D', $values['amount'] ) ||
+            ! preg_match( '/^[a-zA-Z0-9-]{16,80}$/D', $values['request_id'] ) ) {
+            wp_send_json_error( [ 'message' => 'The order amount or URL details are invalid. Please check the order link.' ] );
+        }
+        $labels = [
+            'o1_qty_swab'  => 'Full Rollout — DNA Swab Kits',
+            'o1_qty_waste' => 'Full Rollout — Waste Sample Kits',
+            'o2_qty_swab'  => 'Phased Rollout — DNA Swab Kits',
+        ];
+        foreach ( $labels as $key => $label ) {
+            if ( ! preg_match( '/^[0-9]{1,6}$/D', $values[ $key ] ) ) {
+                wp_send_json_error( [ 'message' => 'The URL must contain valid quantities for all three kit types.' ] );
+            }
+        }
+
+        // Remember a saved note so retrying a failed tag does not add it again.
+        $key = 'pp_order_save_' . hash( 'sha256', $contact_id . wp_json_encode( $values ) );
+        $saved = get_transient( $key ) ?: [];
+        $error = '';
+        $failure = 'Could not save the order note. Please try again.';
+        $buffer_level = ob_get_level();
+        ob_start();
+        try {
+            if ( empty( $saved['note'] ) ) {
+                $existing = memb_getContactField( 'ContactNotes' );
+                if ( ! is_string( $existing ) && null !== $existing ) {
+                    throw new \RuntimeException();
+                }
+                $existing = (string) $existing;
+                $lines = [ '[' . current_time( 'mysql' ) . '] PooPrints Order',
+                    'Order Amount: ' . $values['amount'], 'Order Option: ' . $values['option'] ];
+                foreach ( $labels as $field => $label ) {
+                    $lines[] = $label . ': ' . (int) $values[ $field ];
+                }
+                $result = memb_setContactField( 'ContactNotes', implode( "\n", $lines ) . ( $existing !== '' ? "\n\n" . $existing : '' ) );
+                if ( false === $result || is_wp_error( $result ) ) {
+                    throw new \RuntimeException();
+                }
+                $saved['note'] = true;
+                set_transient( $key, $saved, DAY_IN_SECONDS );
+            }
+            $failure = 'Your note was saved, but the tag could not be applied. Please try again.';
+            if ( empty( $saved['tag'] ) ) {
+                self::apply_form_v2_tags( [ 14136 ] );
+                $saved['tag'] = true;
+                set_transient( $key, $saved, DAY_IN_SECONDS );
+            }
+        } catch ( \Throwable $exception ) {
+            $error = $failure;
+            // Report the error type, not raw messages that may contain API data.
+            if ( ! ( $exception instanceof \RuntimeException ) || '' !== $exception->getMessage() ) {
+                $error .= ' (Exception: ' . get_class( $exception ) . '.)';
+            }
+        } finally {
+            // Keep output from Memberium hooks out of the JSON response.
+            while ( ob_get_level() > $buffer_level ) {
+                ob_end_clean();
+            }
+        }
+        if ( $error ) {
+            wp_send_json_error( [ 'message' => $error ] );
+        }
+        wp_send_json_success( [ 'message' => 'Your order is placed successfully. Redirecting.....' ] );
     }
 
     public static function update_units() {

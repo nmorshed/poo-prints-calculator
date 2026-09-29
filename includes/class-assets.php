@@ -13,6 +13,22 @@ class Assets {
     }
 
     public static function register_assets() {
+        wp_register_script(
+            'pooprints-order',
+            POOPRINTS_URL . 'assets/order.js',
+            [],
+            self::asset_version( 'assets/order.js' ),
+            true
+        );
+        // This page contains an independent HTML link; no shortcode is required.
+        if ( is_page( 'get-started-page' ) ) {
+            wp_enqueue_script( 'pooprints-order' );
+            wp_localize_script( 'pooprints-order', 'ppOrder', [
+                'ajax_url' => admin_url( 'admin-ajax.php' ),
+                'nonce'    => wp_create_nonce( 'pooprints_place_order' ),
+            ] );
+        }
+
         wp_register_style(
             'pooprints-calculator',
             POOPRINTS_URL . 'assets/style.css',
