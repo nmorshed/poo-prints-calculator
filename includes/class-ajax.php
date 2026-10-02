@@ -131,10 +131,6 @@ class Ajax {
         $posted = self::sanitize_form_v2_post( $_POST );
         $tags   = Shortcodes::form_v2_tags();
 
-        if ( isset( $tags[ 'step_' . $step ] ) ) {
-            self::apply_form_v2_tags( [ $tags[ 'step_' . $step ] ] );
-        }
-
         if ( 1 === $step ) {
             $shipping_same  = $posted['shipping_same'] ?? '';
             $usps_receive   = $posted['usps_receive'] ?? '';
@@ -145,7 +141,8 @@ class Ajax {
             }
 
             if ( ! in_array( $usps_receive, [ 'yes', 'no' ], true ) ) {
-                wp_send_json_error( [ 'message' => 'Please select whether the property address can receive USPS packages.' ] );
+                $address_label = 'no' === $shipping_same ? 'shipping' : 'property';
+                wp_send_json_error( [ 'message' => sprintf( 'Please select whether the %s address can receive USPS packages.', $address_label ) ] );
             }
 
             if ( ! in_array( $delay_shipping, [ 'yes', 'no' ], true ) ) {
@@ -154,6 +151,36 @@ class Ajax {
 
             if ( 'yes' === $delay_shipping && '' === trim( $posted['delay_date'] ?? '' ) ) {
                 wp_send_json_error( [ 'message' => 'Please select the requested shipment arrival date.' ] );
+            }
+
+            self::validate_form_v2_required_fields( $posted, [
+                'Company'         => 'Property name is required.',
+                'Address3Street1' => 'Property mailing address is required.',
+                'City3'           => 'Property city is required.',
+                'State3'          => 'Property state is required.',
+                'PostalCode3'     => 'Property zip code is required.',
+                'Phone1'          => 'Property phone number is required.',
+                '_ofUnits'        => 'Total number of units is required.',
+            ] );
+
+            if ( 'no' === $shipping_same ) {
+                self::validate_form_v2_required_fields( $posted, [
+                    'shipping_name'     => 'Shipping property or company name is required.',
+                    'shipping_address1' => 'Shipping address line 1 is required.',
+                    'shipping_city'     => 'Shipping city is required.',
+                    'shipping_state'    => 'Shipping state is required.',
+                    'shipping_zip'      => 'Shipping zip code is required.',
+                ] );
+            }
+
+            if ( 'no' === $usps_receive ) {
+                self::validate_form_v2_required_fields( $posted, [
+                    'temp_shipping_name'     => 'Temporary shipping property or company name is required.',
+                    'temp_shipping_address1' => 'Temporary shipping address line 1 is required.',
+                    'temp_shipping_city'     => 'Temporary shipping city is required.',
+                    'temp_shipping_state'    => 'Temporary shipping state is required.',
+                    'temp_shipping_zip'      => 'Temporary shipping zip code is required.',
+                ] );
             }
 
             if ( 'yes' === $shipping_same ) {
@@ -220,6 +247,10 @@ class Ajax {
 
         if ( 2 === $step ) {
             $required_step_2 = [
+                'billing_address1'   => 'Billing mailing address is required.',
+                'billing_city'       => 'Billing city is required.',
+                'billing_state'      => 'Billing state is required.',
+                'billing_zip'        => 'Billing zip code is required.',
                 'primary_first_name' => 'Primary PooPrints contact first name is required.',
                 'primary_last_name'  => 'Primary PooPrints contact last name is required.',
                 'primary_email'      => 'Primary PooPrints contact email is required.',
@@ -356,6 +387,10 @@ class Ajax {
                 'hoa_role'                        => 'HOA contact role',
                 'hoa_on_board'                    => 'HOA contact on association board',
             ] );
+        }
+
+        if ( isset( $tags[ 'step_' . $step ] ) ) {
+            self::apply_form_v2_tags( [ $tags[ 'step_' . $step ] ] );
         }
 
         wp_send_json_success( [

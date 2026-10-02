@@ -87,9 +87,10 @@
   color: var(--ppv2-ink);
   font-size: 24px;
   line-height: 1.25;
+  margin: 0 0 20px;
 }
 
-.pp-form-v2__section-title {
+.pp-form-v2 h2.pp-form-v2__section-title {
   margin-top: 34px;
 }
 
@@ -101,7 +102,7 @@
 
 .pp-form-v2__hint {
   color: var(--ppv2-muted);
-  margin: -8px 0 16px;
+  margin: 0 0 20px;
 }
 
 .pp-form-v2__grid {

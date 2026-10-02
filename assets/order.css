@@ -1,0 +1,102 @@
+#pp-order-overlay {
+  box-sizing: border-box;
+  width: min(480px, calc(100% - 32px));
+  max-width: none;
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 20px;
+  background: #fff;
+  color: #17212b;
+  box-shadow: 0 24px 80px rgb(0 0 0 / 25%);
+  font-family: inherit;
+  text-align: center;
+  overflow: auto;
+}
+
+#pp-order-overlay::backdrop {
+  background: rgb(15 23 42 / 65%);
+}
+
+#pp-order-overlay .pp-order-panel {
+  padding: clamp(24px, 6vw, 40px);
+}
+
+#pp-order-overlay #pp-order-title {
+  margin: 20px 0 12px;
+  color: inherit;
+  font-size: clamp(24px, 5vw, 30px);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+#pp-order-overlay #pp-order-status {
+  margin: 0;
+  color: #475467;
+  font-size: clamp(18px, 4vw, 21px);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+#pp-order-overlay .pp-order-icon {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border: 4px solid transparent;
+  border-radius: 50%;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+#pp-order-overlay[data-state="processing"] .pp-order-icon {
+  border-color: #e8eaed;
+  border-top-color: #be1e2d;
+  animation: pp-order-spin 0.9s linear infinite;
+}
+
+#pp-order-overlay[data-state="success"] .pp-order-icon {
+  background: #e7f5ed;
+  color: #166534;
+}
+
+#pp-order-overlay[data-state="error"] .pp-order-icon {
+  background: #fff0ed;
+  color: #b42318;
+}
+
+#pp-order-overlay .pp-order-close {
+  margin-top: 24px;
+  min-height: 48px;
+  padding: 12px 32px;
+  border: 0;
+  border-radius: 8px;
+  background: #be1e2d;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#pp-order-overlay .pp-order-close[hidden] {
+  display: none;
+}
+
+#pp-order-overlay .pp-order-close:focus-visible {
+  outline: 3px solid #17212b;
+  outline-offset: 3px;
+}
+
+@keyframes pp-order-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #pp-order-overlay[data-state="processing"] .pp-order-icon {
+    animation: none;
+  }
+}

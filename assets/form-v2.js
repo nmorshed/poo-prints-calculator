@@ -24,6 +24,13 @@
   }
 
   function updateConditionals() {
+    var uspsQuestion = root.querySelector('[data-pp-usps-question]');
+    if (uspsQuestion) {
+      uspsQuestion.textContent = fieldValue('shipping_same') === 'no'
+        ? 'Can your shipping address receive USPS packages? *'
+        : 'Can your property address receive USPS packages? *';
+    }
+
     root.querySelectorAll('[data-pp-show-if]').forEach(function (section) {
       var rule = section.getAttribute('data-pp-show-if') || '';
       var parts = rule.split(':');

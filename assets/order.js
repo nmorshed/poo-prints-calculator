@@ -2,6 +2,50 @@
   'use strict';
   var busy = false;
   var pending = null;
+  var overlay;
+  var returnFocus;
+  var previousOverflow;
+
+  function showStatus(text, state, button) {
+    if (!overlay) {
+      overlay = document.createElement('dialog');
+      overlay.id = 'pp-order-overlay';
+      overlay.setAttribute('aria-labelledby', 'pp-order-title');
+      overlay.setAttribute('aria-describedby', 'pp-order-status');
+      overlay.innerHTML = '<div class="pp-order-panel">' +
+        '<span class="pp-order-icon" aria-hidden="true"></span>' +
+        '<h2 id="pp-order-title" tabindex="-1"></h2>' +
+        '<p id="pp-order-status" role="status" aria-live="polite" aria-atomic="true"></p>' +
+        '<button type="button" class="pp-order-close" hidden>Close</button></div>';
+      document.body.appendChild(overlay);
+      overlay.querySelector('.pp-order-close').addEventListener('click', function () {
+        overlay.close();
+      });
+      overlay.addEventListener('cancel', function (event) {
+        // Keep the page blocked until saving finishes, or navigation begins.
+        if (overlay.dataset.state !== 'error') event.preventDefault();
+      });
+      overlay.addEventListener('close', function () {
+        document.body.style.overflow = previousOverflow;
+        if (returnFocus && returnFocus.isConnected) returnFocus.focus();
+      });
+    }
+    var opening = !overlay.open;
+    overlay.dataset.state = state;
+    overlay.querySelector('#pp-order-title').textContent = state === 'error'
+      ? 'Unable to complete your order' : state === 'success' ? 'Order placed' : 'Processing your order';
+    overlay.querySelector('.pp-order-icon').textContent = state === 'error' ? '!' : state === 'success' ? '✓' : '';
+    overlay.querySelector('.pp-order-close').hidden = state !== 'error';
+    if (opening) {
+      returnFocus = button;
+      previousOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      overlay.showModal();
+      overlay.querySelector('#pp-order-title').focus();
+    }
+    overlay.querySelector('#pp-order-status').textContent = text;
+    if (state === 'error') overlay.querySelector('.pp-order-close').focus();
+  }
 
   // Listen for the independent link, including clicks on its span or SVG.
   document.addEventListener('click', async function (event) {
@@ -9,19 +53,6 @@
     if (!button) return;
     event.preventDefault();
     if (busy) return;
-
-    var message = document.getElementById('pp-order-status');
-    if (!message) {
-      message = document.createElement('p');
-      message.id = 'pp-order-status';
-      message.setAttribute('role', 'status');
-      message.setAttribute('aria-live', 'polite');
-      button.insertAdjacentElement('afterend', message);
-    }
-    function status(text, failed) {
-      message.textContent = text;
-      message.style.color = failed ? '#b42318' : '#166534';
-    }
 
     try {
       if (typeof ppOrder === 'undefined') throw new Error('Order service unavailable. Please refresh the page.');
@@ -52,7 +83,7 @@
       busy = true;
       button.setAttribute('aria-disabled', 'true');
       button.setAttribute('aria-busy', 'true');
-      status('We are processing your order........', false);
+      showStatus('We are processing your order........', 'processing', button);
       var response = await fetch(ppOrder.ajax_url, {
         method: 'POST', credentials: 'same-origin', body: new URLSearchParams(details)
       });
@@ -63,10 +94,10 @@
       if (!response.ok || !result || !result.success) {
         throw new Error(result && result.data && result.data.message || 'Unable to save your order. Please try again.');
       }
-      status('Your order is placed successfully. Redirecting.....', false);
+      showStatus('Your order is placed successfully. Redirecting.....', 'success', button);
       window.setTimeout(function () { window.location.assign(destination.href); }, 1500);
     } catch (error) {
-      status(error.message || 'Unable to save your order. Please try again.', true);
+      showStatus(error.message || 'Unable to save your order. Please try again.', 'error', button);
       busy = false;
       button.removeAttribute('aria-disabled');
       button.removeAttribute('aria-busy');

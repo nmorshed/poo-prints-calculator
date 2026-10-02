@@ -22,6 +22,12 @@ class Assets {
         );
         // This page contains an independent HTML link; no shortcode is required.
         if ( is_page( 'get-started-page' ) ) {
+            wp_enqueue_style(
+                'pooprints-order',
+                POOPRINTS_URL . 'assets/order.css',
+                [],
+                self::asset_version( 'assets/order.css' )
+            );
             wp_enqueue_script( 'pooprints-order' );
             wp_localize_script( 'pooprints-order', 'ppOrder', [
                 'ajax_url' => admin_url( 'admin-ajax.php' ),

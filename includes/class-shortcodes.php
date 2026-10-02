@@ -498,8 +498,8 @@ class Shortcodes {
                             <label class="pp-field pp-field--span-3">Zip Code *
                                 <input name="PostalCode3" type="text" value="<?php echo esc_attr( $values['PostalCode3'] ); ?>" placeholder="Zip code" required>
                             </label>
-                            <label class="pp-field pp-field--span-6">Phone Number
-                                <input name="Phone1" type="tel" value="<?php echo esc_attr( $values['Phone1'] ); ?>" placeholder="(000) 000-0000">
+                            <label class="pp-field pp-field--span-6">Phone Number *
+                                <input name="Phone1" type="tel" value="<?php echo esc_attr( $values['Phone1'] ); ?>" placeholder="(000) 000-0000" required>
                             </label>
                             <label class="pp-field pp-field--span-6">Total Number of Units *
                                 <input name="_ofUnits" type="number" min="0" value="<?php echo esc_attr( $values['_ofUnits'] ); ?>" placeholder="Enter number of units" required>
@@ -514,52 +514,52 @@ class Shortcodes {
                         </fieldset>
                         <div class="pp-form-v2__conditional" data-pp-show-if="shipping_same:no">
                             <div class="pp-form-v2__grid">
-                                <label class="pp-field pp-field--full">Shipping Property or Company Name
-                                    <input name="shipping_name" type="text" placeholder="Property or company name">
+                                <label class="pp-field pp-field--full">Shipping Property or Company Name *
+                                    <input name="shipping_name" type="text" placeholder="Property or company name" required>
                                 </label>
-                                <label class="pp-field pp-field--full">Shipping Address Line 1
-                                    <input name="shipping_address1" type="text" value="<?php echo esc_attr( $values['StreetAddress1'] ); ?>" placeholder="Address line 1">
+                                <label class="pp-field pp-field--full">Shipping Address Line 1 *
+                                    <input name="shipping_address1" type="text" value="<?php echo esc_attr( $values['StreetAddress1'] ); ?>" placeholder="Address line 1" required>
                                 </label>
                                 <label class="pp-field pp-field--full">Shipping Address Line 2
                                     <input name="shipping_address2" type="text" value="<?php echo esc_attr( $values['StreetAddress2'] ); ?>" placeholder="Address line 2">
                                 </label>
-                                <label class="pp-field pp-field--span-6">City
-                                    <input name="shipping_city" type="text" value="<?php echo esc_attr( $values['City'] ); ?>" placeholder="Enter city">
+                                <label class="pp-field pp-field--span-6">City *
+                                    <input name="shipping_city" type="text" value="<?php echo esc_attr( $values['City'] ); ?>" placeholder="Enter city" required>
                                 </label>
-                                <label class="pp-field pp-field--span-3">State
-                                    <input name="shipping_state" type="text" value="<?php echo esc_attr( $values['State'] ); ?>" placeholder="State">
+                                <label class="pp-field pp-field--span-3">State *
+                                    <input name="shipping_state" type="text" value="<?php echo esc_attr( $values['State'] ); ?>" placeholder="State" required>
                                 </label>
-                                <label class="pp-field pp-field--span-3">Zip Code
-                                    <input name="shipping_zip" type="text" value="<?php echo esc_attr( $values['PostalCode'] ); ?>" placeholder="Zip code">
+                                <label class="pp-field pp-field--span-3">Zip Code *
+                                    <input name="shipping_zip" type="text" value="<?php echo esc_attr( $values['PostalCode'] ); ?>" placeholder="Zip code" required>
                                 </label>
                             </div>
                         </div>
 
                         <fieldset class="pp-choice">
-                            <legend>Can your property address receive USPS packages? *</legend>
+                            <legend data-pp-usps-question>Can your property address receive USPS packages? *</legend>
                             <label><input type="radio" name="usps_receive" value="yes" required> Yes</label>
                             <label><input type="radio" name="usps_receive" value="no" required> No</label>
                         </fieldset>
                         <div class="pp-form-v2__conditional" data-pp-show-if="usps_receive:no">
                             <h3>Temporary Shipping Address</h3>
                             <div class="pp-form-v2__grid">
-                                <label class="pp-field pp-field--full">Property or Company Name
-                                    <input name="temp_shipping_name" type="text" placeholder="Property or company name">
+                                <label class="pp-field pp-field--full">Property or Company Name *
+                                    <input name="temp_shipping_name" type="text" placeholder="Property or company name" required>
                                 </label>
-                                <label class="pp-field pp-field--full">Address Line 1
-                                    <input name="temp_shipping_address1" type="text" placeholder="Address line 1">
+                                <label class="pp-field pp-field--full">Address Line 1 *
+                                    <input name="temp_shipping_address1" type="text" placeholder="Address line 1" required>
                                 </label>
                                 <label class="pp-field pp-field--full">Address Line 2
                                     <input name="temp_shipping_address2" type="text" placeholder="Address line 2">
                                 </label>
-                                <label class="pp-field pp-field--span-6">City
-                                    <input name="temp_shipping_city" type="text" placeholder="Enter city">
+                                <label class="pp-field pp-field--span-6">City *
+                                    <input name="temp_shipping_city" type="text" placeholder="Enter city" required>
                                 </label>
-                                <label class="pp-field pp-field--span-3">State
-                                    <input name="temp_shipping_state" type="text" placeholder="State">
+                                <label class="pp-field pp-field--span-3">State *
+                                    <input name="temp_shipping_state" type="text" placeholder="State" required>
                                 </label>
-                                <label class="pp-field pp-field--span-3">Zip Code
-                                    <input name="temp_shipping_zip" type="text" placeholder="Zip code">
+                                <label class="pp-field pp-field--span-3">Zip Code *
+                                    <input name="temp_shipping_zip" type="text" placeholder="Zip code" required>
                                 </label>
                             </div>
                         </div>
@@ -582,20 +582,20 @@ class Shortcodes {
                             <label class="pp-field pp-field--full">Company Name
                                 <input name="billing_company" type="text" placeholder="Enter company name if different than the property name.">
                             </label>
-                            <label class="pp-field pp-field--span-8">Billing Mailing Address
-                                <input name="billing_address1" type="text" value="<?php echo esc_attr( $values['billing_address1'] ); ?>" placeholder="Enter U.S. Postal (USPS) address">
+                            <label class="pp-field pp-field--span-8">Billing Mailing Address *
+                                <input name="billing_address1" type="text" value="<?php echo esc_attr( $values['billing_address1'] ); ?>" placeholder="Enter U.S. Postal (USPS) address" required>
                             </label>
                             <label class="pp-field pp-field--span-4">Unit or Suite # or Leasing Office
                                 <input name="billing_address2" type="text" value="<?php echo esc_attr( $values['billing_address2'] ); ?>" placeholder="Unit # or leasing office">
                             </label>
-                            <label class="pp-field pp-field--span-6">City
-                                <input name="billing_city" type="text" value="<?php echo esc_attr( $values['billing_city'] ); ?>" placeholder="Enter city">
+                            <label class="pp-field pp-field--span-6">City *
+                                <input name="billing_city" type="text" value="<?php echo esc_attr( $values['billing_city'] ); ?>" placeholder="Enter city" required>
                             </label>
-                            <label class="pp-field pp-field--span-3">State
-                                <input name="billing_state" type="text" value="<?php echo esc_attr( $values['billing_state'] ); ?>" placeholder="State">
+                            <label class="pp-field pp-field--span-3">State *
+                                <input name="billing_state" type="text" value="<?php echo esc_attr( $values['billing_state'] ); ?>" placeholder="State" required>
                             </label>
-                            <label class="pp-field pp-field--span-3">Zip Code
-                                <input name="billing_zip" type="text" value="<?php echo esc_attr( $values['billing_zip'] ); ?>" placeholder="Zip code">
+                            <label class="pp-field pp-field--span-3">Zip Code *
+                                <input name="billing_zip" type="text" value="<?php echo esc_attr( $values['billing_zip'] ); ?>" placeholder="Zip code" required>
                             </label>
                         </div>
 
@@ -645,7 +645,7 @@ class Shortcodes {
                         <fieldset class="pp-choice">
                             <legend>Is there a management company? *</legend>
                             <label><input type="radio" name="has_management_company" value="yes" required> Yes</label>
-                            <label><input type="radio" name="has_management_company" value="no" required> No</label>
+                            <label><input type="radio" name="has_management_company" value="no" required> No (Self managed)</label>
                         </fieldset>
 
                         <div class="pp-form-v2__conditional" data-pp-show-if="has_management_company:yes">
