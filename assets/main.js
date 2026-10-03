@@ -135,23 +135,40 @@ document.addEventListener('DOMContentLoaded', function () {
     linkEl.innerHTML = expanding ? '&#9650; Collapse All' : '&#9660; Expand All';
   };
 
+  var roiResetNoticeTimer;
   window.roiResetDefaults = function () {
     if (typeof ppPrices === 'undefined' || !ppPrices.field_map) return;
     Object.keys(ppPrices.field_map).forEach(function (param) {
       var entry = ppPrices.field_map[param];
+      if (entry.id === 'units' || entry.id === 'dogs') return;
       var el = document.getElementById(entry.id);
       if (el) el.value = entry.default;
     });
-    // Keep dogs/o1_qty_swab in sync
+    // Preserve the community's dog count as the source for Option 1 quantities.
     var swabEl = document.getElementById('o1_qty_swab');
     var dogsEl = document.getElementById('dogs');
-    if (swabEl && dogsEl) dogsEl.value = swabEl.value;
-    calcOption1();
-    calcOption2();
+    var tableSwabEl = document.querySelector('#pp-table-opt1 [data-pp-line="dna"]');
+    if (swabEl && dogsEl) swabEl.value = dogsEl.value;
+    if (tableSwabEl && dogsEl) tableSwabEl.value = dogsEl.value;
+
+    // Match initial rendering: calculate the investment with the template present
+    // before ROI, and do not invent an Option 1 investment on an ROI-only page.
+    if (swabEl) calcOption1();
+    if (document.getElementById('o2_qty_swab')) calcOption2();
+    if (document.querySelector('#pp-table-opt1 [data-pp-line]')) calcOption1T2();
+    if (document.querySelector('#pp-table-opt2 [data-pp-line]')) calcOption2T2();
+    if (!swabEl && !document.querySelector('#pp-table-opt1 [data-pp-line]')) calcROI();
     // Reset writes the fields directly, firing no events, so the editable values
     // have to be told: otherwise their announced value and the URL keep the old
     // number while the page shows the default.
     refreshEditables();
+    set('roiResetNoticeText', 'All fields are reset except the # of units & # of dogs.');
+    var resetNotice = document.getElementById('roiResetNotice');
+    if (resetNotice) resetNotice.classList.add('is-visible');
+    window.clearTimeout(roiResetNoticeTimer);
+    roiResetNoticeTimer = window.setTimeout(function () {
+      if (resetNotice) resetNotice.classList.remove('is-visible');
+    }, 3000);
   };
 
   window.toggleSection = function (sectionId, arrowEl) {

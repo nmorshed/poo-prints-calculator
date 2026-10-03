@@ -1293,6 +1293,7 @@ class Shortcodes {
           <a class="roi-masthead__toggle" id="roiExpandToggle" href="#" onclick="roiToggleAll(this); return false;">&#9660; Expand All</a>
           <a class="roi-masthead__reset" href="#" onclick="roiResetDefaults(); return false;">&#8635; Reset</a>
         </div>
+        <div id="roiResetNotice" class="roi-reset-notice" role="status" aria-live="polite"><span id="roiResetNoticeText"></span></div>
         <div id="roiCard">
           <div class="roi-layout">
 

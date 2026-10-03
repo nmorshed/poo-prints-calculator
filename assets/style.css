@@ -199,6 +199,38 @@
 }
 .roi-masthead__reset:hover { text-decoration: underline; }
 
+.roi-reset-notice {
+  display: grid;
+  grid-template-rows: 0fr;
+  text-align: center;
+  color: #475569;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: grid-template-rows 250ms ease, margin-bottom 250ms ease, opacity 250ms ease, visibility 0s linear 250ms;
+}
+
+.roi-reset-notice > span {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.roi-reset-notice.is-visible {
+  grid-template-rows: 1fr;
+  margin-bottom: 12px;
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .roi-reset-notice {
+    transition: none;
+  }
+}
+
 /* ── ROI card layout ── */
 #roiCard { background: transparent; border-radius: 0; }
 
@@ -763,7 +795,6 @@
   border-bottom: 1px solid #eee;
   text-align: center;
 }
-.pp-ft-table tbody td:first-child { text-align: left; }
 .pp-ft-table tbody tr:last-child td { border-bottom: none; }
 .pp-ft-row--loss td { color: #c0392b; }
 .pp-ft-row--recommended td { background: #e8f5e9; font-weight: 700; color: #1b5e20; }
