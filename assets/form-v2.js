@@ -11,6 +11,40 @@
   var currentStep = 1;
   var finalTagged = false;
   var step3Initialized = false;
+  var billingCopy = form.querySelector('[name="billing_same_as_property"]');
+  var previousBilling = null;
+  var billingFields = {
+    billing_address1: 'Address3Street1',
+    billing_address2: 'Address3Street2',
+    billing_city: 'City3',
+    billing_state: 'State3',
+    billing_zip: 'PostalCode3'
+  };
+
+  function syncBillingAddress() {
+    if (!billingCopy) return;
+    if (billingCopy.checked && previousBilling === null) {
+      previousBilling = {};
+      Object.keys(billingFields).forEach(function (name) {
+        previousBilling[name] = fieldValue(name);
+      });
+    }
+    Object.keys(billingFields).forEach(function (name) {
+      var input = form.querySelector('[name="' + name + '"]');
+      input.readOnly = billingCopy.checked;
+      if (billingCopy.checked) input.value = fieldValue(billingFields[name]);
+      else if (previousBilling !== null) input.value = previousBilling[name];
+    });
+    if (!billingCopy.checked) previousBilling = null;
+  }
+
+  function formatOwnerPhone(input) {
+    var digits = input.value.replace(/\D/g, '');
+    if (digits.length === 11 && digits.charAt(0) === '1') digits = digits.slice(1);
+    if (digits.length === 10) {
+      input.value = '(' + digits.slice(0, 3) + ') ' + digits.slice(3, 6) + '-' + digits.slice(6);
+    }
+  }
 
   function fieldValue(name) {
     var checked = form.querySelector('[name="' + name + '"]:checked');
@@ -92,6 +126,7 @@
     }
 
     showNotice('', 'info');
+    syncBillingAddress();
     updateConditionals();
 
     if (step === 4 && !finalTagged) {
@@ -121,6 +156,9 @@
   }
 
   function submitStep(step, silent) {
+    syncBillingAddress();
+    var ownerPhone = form.querySelector('[name="owner_phone"]');
+    if (ownerPhone) formatOwnerPhone(ownerPhone);
     var data = new FormData(form);
     data.set('action', ppFormV2.action);
     data.set('nonce', ppFormV2.nonce);
@@ -164,8 +202,8 @@
 
     var clone = item.cloneNode(true);
     clone.querySelectorAll('input, select').forEach(function (field) {
-      field.value = '';
       if (field.type === 'checkbox' || field.type === 'radio') field.checked = false;
+      else field.value = '';
     });
     var index = list.querySelectorAll('.pp-form-v2__repeat-item').length;
     clone.querySelectorAll('[name^="hoa_on_board"]').forEach(function (field) {
@@ -175,6 +213,15 @@
   }
 
   root.addEventListener('change', updateConditionals);
+  root.addEventListener('change', syncBillingAddress);
+  root.addEventListener('input', function (event) {
+    if (Object.keys(billingFields).some(function (name) { return billingFields[name] === event.target.name; })) {
+      syncBillingAddress();
+    }
+  });
+  root.addEventListener('focusout', function (event) {
+    if (event.target.name === 'owner_phone') formatOwnerPhone(event.target);
+  });
 
   var addHoaBtn = root.querySelector('[data-pp-add-hoa]');
   if (addHoaBtn) {

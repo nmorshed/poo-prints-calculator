@@ -246,6 +246,17 @@ class Ajax {
         }
 
         if ( 2 === $step ) {
+            if ( 'yes' === ( $posted['billing_same_as_property'] ?? '' ) ) {
+                foreach ( [
+                    'billing_address1' => 'Address3Street1',
+                    'billing_address2' => 'Address3Street2',
+                    'billing_city'     => 'City3',
+                    'billing_state'    => 'State3',
+                    'billing_zip'      => 'PostalCode3',
+                ] as $billing_field => $property_field ) {
+                    $posted[ $billing_field ] = $posted[ $property_field ] ?? '';
+                }
+            }
             $required_step_2 = [
                 'billing_address1'   => 'Billing mailing address is required.',
                 'billing_city'       => 'Billing city is required.',
@@ -323,12 +334,19 @@ class Ajax {
                     'management_city'              => 'Management company city is required.',
                     'management_state'             => 'Management company state is required.',
                     'management_zip'               => 'Management company zip code is required.',
-                    'community_manager_first_name' => 'Community manager first name is required.',
-                    'community_manager_last_name'  => 'Community manager last name is required.',
-                    'community_manager_email'      => 'Community manager email is required.',
-                    'community_manager_job_title'  => 'Community manager job title is required.',
+                    'community_manager_first_name' => 'Person who manages this community - first name is required.',
+                    'community_manager_last_name'  => 'Person who manages this community - last name is required.',
+                    'community_manager_email'      => 'Person who manages this community - email is required.',
+                    'community_manager_job_title'  => 'Person who manages this community - job title is required.',
                 ] );
-                self::validate_form_v2_email_field( $posted, 'community_manager_email', 'Please enter a valid community manager email.' );
+                self::validate_form_v2_required_fields( $posted, [
+                    'regional_manager_first_name' => 'Supervisor first name is required.',
+                    'regional_manager_last_name'  => 'Supervisor last name is required.',
+                    'regional_manager_email'      => 'Supervisor email is required.',
+                    'regional_manager_job_title'  => 'Supervisor job title is required.',
+                ] );
+                self::validate_form_v2_email_field( $posted, 'regional_manager_email', 'Please enter a valid supervisor email.' );
+                self::validate_form_v2_email_field( $posted, 'community_manager_email', 'Please enter a valid email for the person who manages this community.' );
             } else {
                 $property_type = '';
                 if ( function_exists( 'memb_getContactField' ) ) {
@@ -337,17 +355,17 @@ class Ajax {
 
                 if ( 'rental' === $property_type ) {
                     self::validate_form_v2_required_fields( $posted, [
-                        'community_manager_first_name' => 'Community manager first name is required.',
-                        'community_manager_last_name'  => 'Community manager last name is required.',
-                        'community_manager_email'      => 'Community manager email is required.',
-                        'community_manager_job_title'  => 'Community manager job title is required.',
-                        'owner_first_name'             => 'Property owner first name is required.',
-                        'owner_last_name'              => 'Property owner last name is required.',
-                        'owner_email'                  => 'Property owner email is required.',
-                        'owner_phone'                  => 'Property owner phone number is required.',
+                        'community_manager_first_name' => 'Person who manages this community - first name is required.',
+                        'community_manager_last_name'  => 'Person who manages this community - last name is required.',
+                        'community_manager_email'      => 'Person who manages this community - email is required.',
+                        'community_manager_job_title'  => 'Person who manages this community - job title is required.',
+                        'owner_first_name'             => 'Property owner representative first name is required.',
+                        'owner_last_name'              => 'Property owner representative last name is required.',
+                        'owner_email'                  => 'Property owner representative email is required.',
+                        'owner_phone'                  => 'Property owner representative phone number is required.',
                     ] );
-                    self::validate_form_v2_email_field( $posted, 'community_manager_email', 'Please enter a valid community manager email.' );
-                    self::validate_form_v2_email_field( $posted, 'owner_email', 'Please enter a valid property owner email.' );
+                    self::validate_form_v2_email_field( $posted, 'community_manager_email', 'Please enter a valid email for the person who manages this community.' );
+                    self::validate_form_v2_email_field( $posted, 'owner_email', 'Please enter a valid property owner representative email.' );
                 } else {
                     self::validate_form_v2_required_array_rows( $posted, [
                         'hoa_first_name' => 'HOA contact first name',
@@ -360,6 +378,16 @@ class Ajax {
                 }
             }
 
+            if ( isset( $posted['owner_phone'] ) ) {
+                $digits = preg_replace( '/\D/', '', $posted['owner_phone'] );
+                if ( 11 === strlen( $digits ) && '1' === $digits[0] ) {
+                    $digits = substr( $digits, 1 );
+                }
+                if ( 10 === strlen( $digits ) ) {
+                    $posted['owner_phone'] = sprintf( '(%s) %s-%s', substr( $digits, 0, 3 ), substr( $digits, 3, 3 ), substr( $digits, 6 ) );
+                }
+            }
+
             self::append_form_v2_notes( 'Organization & Submit', $posted, [
                 'has_management_company'          => 'Has management company',
                 'management_company_name'         => 'Management company name',
@@ -368,19 +396,19 @@ class Ajax {
                 'management_city'                 => 'Management company city',
                 'management_state'                => 'Management company state',
                 'management_zip'                  => 'Management company zip',
-                'community_manager_first_name'    => 'Community manager first name',
-                'community_manager_last_name'     => 'Community manager last name',
-                'community_manager_email'         => 'Community manager email',
-                'community_manager_job_title'     => 'Community manager job title',
-                'regional_manager_first_name'     => 'Regional/asset manager first name',
-                'regional_manager_last_name'      => 'Regional/asset manager last name',
-                'regional_manager_email'          => 'Regional/asset manager email',
-                'regional_manager_job_title'      => 'Regional/asset manager job title',
-                'owner_first_name'                => 'Property owner first name',
-                'owner_last_name'                 => 'Property owner last name',
-                'owner_email'                     => 'Property owner email',
-                'owner_phone'                     => 'Property owner phone',
-                'owner_company_name'              => 'Property owner company name',
+                'community_manager_first_name'    => 'Person who manages this community - first name',
+                'community_manager_last_name'     => 'Person who manages this community - last name',
+                'community_manager_email'         => 'Person who manages this community - email',
+                'community_manager_job_title'     => 'Person who manages this community - job title',
+                'regional_manager_first_name'     => 'Supervisor first name',
+                'regional_manager_last_name'      => 'Supervisor last name',
+                'regional_manager_email'          => 'Supervisor email',
+                'regional_manager_job_title'      => 'Supervisor job title',
+                'owner_first_name'                => 'Property owner representative first name',
+                'owner_last_name'                 => 'Property owner representative last name',
+                'owner_email'                     => 'Property owner representative email',
+                'owner_phone'                     => 'Property owner representative phone',
+                'owner_company_name'              => 'Property owner representative company name',
                 'hoa_first_name'                  => 'HOA contact first name',
                 'hoa_last_name'                   => 'HOA contact last name',
                 'hoa_email'                       => 'HOA contact email',

@@ -577,7 +577,10 @@ class Shortcodes {
                     </section>
 
                     <section class="pp-form-v2__panel" data-pp-step="2">
-                        <h2>Billing Address for Property</h2>
+                        <div class="pp-form-v2__billing-heading">
+                            <h2>Billing Address for Property</h2>
+                            <label class="pp-form-v2__billing-copy"><input type="checkbox" name="billing_same_as_property" value="yes"> Use property address as billing address</label>
+                        </div>
                         <div class="pp-form-v2__grid">
                             <label class="pp-field pp-field--full">Company Name
                                 <input name="billing_company" type="text" placeholder="Enter company name if different than the property name.">
@@ -670,45 +673,48 @@ class Shortcodes {
                                     <input name="management_zip" type="text" placeholder="Zip code" required>
                                 </label>
                             </div>
-                            <h3>Community Manager</h3>
+                            <h3>Person Who Manages this Community</h3>
                             <div class="pp-form-v2__grid">
-                                <label class="pp-field pp-field--span-6">Community Manager First Name *
+                                <label class="pp-field pp-field--span-6">First Name *
                                     <input name="community_manager_first_name" type="text" placeholder="First name" required>
                                 </label>
-                                <label class="pp-field pp-field--span-6">Community Manager Last Name *
+                                <label class="pp-field pp-field--span-6">Last Name *
                                     <input name="community_manager_last_name" type="text" placeholder="Last name" required>
                                 </label>
-                                <label class="pp-field pp-field--span-6">Community Manager Email *
+                                <label class="pp-field pp-field--span-6">Email *
                                     <input name="community_manager_email" type="email" placeholder="email@example.com" required>
                                 </label>
                                 <label class="pp-field pp-field--span-6">Job Title *
                                     <input name="community_manager_job_title" type="text" placeholder="e.g. Community Manager" required>
                                 </label>
-                                <label class="pp-field pp-field--span-6">Regional/Asset Manager First Name
-                                    <input name="regional_manager_first_name" type="text" placeholder="First name">
+                            </div>
+                            <h3>Person Who Manages Community Reports to This Person</h3>
+                            <div class="pp-form-v2__grid">
+                                <label class="pp-field pp-field--span-6">First Name *
+                                    <input name="regional_manager_first_name" type="text" placeholder="First name" required>
                                 </label>
-                                <label class="pp-field pp-field--span-6">Regional/Asset Manager Last Name
-                                    <input name="regional_manager_last_name" type="text" placeholder="Last name">
+                                <label class="pp-field pp-field--span-6">Last Name *
+                                    <input name="regional_manager_last_name" type="text" placeholder="Last name" required>
                                 </label>
-                                <label class="pp-field pp-field--span-6">Regional/Asset Manager Email
-                                    <input name="regional_manager_email" type="email" placeholder="email@example.com">
+                                <label class="pp-field pp-field--span-6">Email *
+                                    <input name="regional_manager_email" type="email" placeholder="email@example.com" required>
                                 </label>
-                                <label class="pp-field pp-field--span-6">Job Title
-                                    <input name="regional_manager_job_title" type="text" placeholder="e.g. Regional Manager">
+                                <label class="pp-field pp-field--span-6">Job Title *
+                                    <input name="regional_manager_job_title" type="text" placeholder="e.g. Regional Manager" required>
                                 </label>
                             </div>
                         </div>
 
                         <div class="pp-form-v2__conditional" data-pp-step3-branch="rental">
-                        <h3>Community Manager</h3>
+                        <h3>Person Who Manages this Community</h3>
                             <div class="pp-form-v2__grid">
-                                <label class="pp-field pp-field--span-6">Community Manager First Name *
+                                <label class="pp-field pp-field--span-6">First Name *
                                     <input name="community_manager_first_name" type="text" placeholder="First name" required>
                                 </label>
-                                <label class="pp-field pp-field--span-6">Community Manager Last Name *
+                                <label class="pp-field pp-field--span-6">Last Name *
                                     <input name="community_manager_last_name" type="text" placeholder="Last name" required>
                                 </label>
-                                <label class="pp-field pp-field--span-6">Community Manager Email *
+                                <label class="pp-field pp-field--span-6">Email *
                                     <input name="community_manager_email" type="email" placeholder="email@example.com" required>
                                 </label>
                                 <label class="pp-field pp-field--span-6">Job Title *
@@ -716,15 +722,15 @@ class Shortcodes {
                                 </label>
                             </div>
                             
-                            <h3>Property Owner</h3>
+                            <h3>Property Owner Representative</h3>
                             <div class="pp-form-v2__grid">
-                                <label class="pp-field pp-field--span-6">Owner First Name *
+                                <label class="pp-field pp-field--span-6">First Name *
                                     <input name="owner_first_name" type="text" placeholder="First name" required>
                                 </label>
-                                <label class="pp-field pp-field--span-6">Owner Last Name *
+                                <label class="pp-field pp-field--span-6">Last Name *
                                     <input name="owner_last_name" type="text" placeholder="Last name" required>
                                 </label>
-                                <label class="pp-field pp-field--span-6">Owner Email *
+                                <label class="pp-field pp-field--span-6">Email *
                                     <input name="owner_email" type="email" placeholder="email@example.com" required>
                                 </label>
                                 <label class="pp-field pp-field--span-6">Phone Number *
@@ -753,7 +759,7 @@ class Shortcodes {
                                         <input name="hoa_role[]" type="text" placeholder="Role in the association" required>
                                     </label>
                                     <fieldset class="pp-choice pp-field--full">
-                                        <legend>Are you on the association board? *</legend>
+                                        <legend>Is this person on the association board? *</legend>
                                         <label><input type="radio" name="hoa_on_board[0]" value="yes" required> Yes</label>
                                         <label><input type="radio" name="hoa_on_board[0]" value="no" required> No</label>
                                     </fieldset>
