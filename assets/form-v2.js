@@ -38,11 +38,36 @@
     if (!billingCopy.checked) previousBilling = null;
   }
 
-  function formatOwnerPhone(input) {
-    var digits = input.value.replace(/\D/g, '');
-    if (digits.length === 11 && digits.charAt(0) === '1') digits = digits.slice(1);
-    if (digits.length === 10) {
-      input.value = '(' + digits.slice(0, 3) + ') ' + digits.slice(3, 6) + '-' + digits.slice(6);
+  function formatPhone(input) {
+    var original = input.value;
+    var digits = original.replace(/\D/g, '');
+    var caret = input.selectionStart;
+    var digitsBeforeCaret = original.slice(0, caret === null ? original.length : caret).replace(/\D/g, '').length;
+    if (digits.length === 11 && digits.charAt(0) === '1') {
+      digits = digits.slice(1);
+      digitsBeforeCaret = Math.max(0, digitsBeforeCaret - 1);
+    }
+    // Preserve longer numbers rather than silently discarding extra digits.
+    if (digits.length > 10) return;
+    var formatted = digits;
+    if (digits.length > 3) formatted = '(' + digits.slice(0, 3) + ') ' + digits.slice(3, 6);
+    if (digits.length > 6) formatted += '-' + digits.slice(6);
+    if (formatted === original) return;
+    input.value = formatted;
+    if (caret !== null && document.activeElement === input) {
+      var position = 0;
+      var count = 0;
+      while (position < formatted.length && count < digitsBeforeCaret) {
+        if (/\d/.test(formatted.charAt(position))) count++;
+        position++;
+      }
+      input.setSelectionRange(position, position);
+    }
+  }
+
+  function formatPhoneEvent(event) {
+    if (!event.isComposing && (event.target.name === 'Phone1' || event.target.name === 'owner_phone')) {
+      formatPhone(event.target);
     }
   }
 
@@ -157,8 +182,7 @@
 
   function submitStep(step, silent) {
     syncBillingAddress();
-    var ownerPhone = form.querySelector('[name="owner_phone"]');
-    if (ownerPhone) formatOwnerPhone(ownerPhone);
+    form.querySelectorAll('[name="Phone1"], [name="owner_phone"]').forEach(formatPhone);
     var data = new FormData(form);
     data.set('action', ppFormV2.action);
     data.set('nonce', ppFormV2.nonce);
@@ -215,13 +239,13 @@
   root.addEventListener('change', updateConditionals);
   root.addEventListener('change', syncBillingAddress);
   root.addEventListener('input', function (event) {
+    formatPhoneEvent(event);
     if (Object.keys(billingFields).some(function (name) { return billingFields[name] === event.target.name; })) {
       syncBillingAddress();
     }
   });
-  root.addEventListener('focusout', function (event) {
-    if (event.target.name === 'owner_phone') formatOwnerPhone(event.target);
-  });
+  root.addEventListener('keyup', formatPhoneEvent);
+  root.addEventListener('focusout', formatPhoneEvent);
 
   var addHoaBtn = root.querySelector('[data-pp-add-hoa]');
   if (addHoaBtn) {
