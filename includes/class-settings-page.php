@@ -776,6 +776,7 @@ class Settings_Page {
             '[pooprints_fine_tables]'      => __( 'Renders both fine reference tables side by side (breakeven + profit/loss).', 'pooprints-calculator' ),
             '[pooprints_fine_tables show="breakeven"]' => __( 'Renders only the Breakeven Fine Amount table.', 'pooprints-calculator' ),
             '[pooprints_fine_tables show="profit"]'    => __( 'Renders only the Waste Testing Profit (Loss) table.', 'pooprints-calculator' ),
+            '[pooprints_fine_tables show="profit_numbered"]' => __( 'Renders only the Waste Testing Profit (Loss) table, with a Row # column.', 'pooprints-calculator' ),
         ];
 
         $value_groups = [

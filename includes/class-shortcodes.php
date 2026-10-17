@@ -1037,7 +1037,7 @@ class Shortcodes {
                     </tr>
                     <tr class="pp-row-noqty">
                       <td>
-                        <span class="pp-row-label">Annual Subscription Fee <span class="pp-info" title="Subscription details">i</span></span>
+                        <span class="pp-row-label">Annual Prime Membership <span class="pp-info" title="Subscription details">i</span></span>
                         <span class="pp-row-sub">Ongoing support and enhancements.</span>
                       </td>
                       <td class="pp-col-qty"></td>
@@ -1092,8 +1092,8 @@ class Shortcodes {
                 <!-- One-Time Setup Fee -->
                 <div class="option-card-cell card-label card-span3">One-Time Setup Fee</div>
                 <div class="option-card-cell card-cost">$<?php echo esc_html( number_format( $setup_fee, 2 ) ); ?></div>
-                <!-- Annual Subscription Fee -->
-                <div class="option-card-cell card-label card-span3">Annual Subscription Fee</div>
+                <!-- Annual Prime Membership -->
+                <div class="option-card-cell card-label card-span3">Annual Prime Membership</div>
                 <div class="option-card-cell card-cost">$<?php echo esc_html( number_format( $subscription_fee, 2 ) ); ?></div>
                 <!-- Summary rows -->
                 <div class="option-card-cell card-label card-span3 card-highlight">Single Payment &mdash; Total Cost (Save <?php echo esc_html( $savings_pct ); ?>%)</div>
@@ -1173,7 +1173,7 @@ class Shortcodes {
                     </tr>
                     <tr class="pp-row-noqty">
                       <td>
-                        <span class="pp-row-label">Annual Subscription Fee <span class="pp-info" title="Subscription details">i</span></span>
+                        <span class="pp-row-label">Annual Prime Membership <span class="pp-info" title="Subscription details">i</span></span>
                         <span class="pp-row-sub">Ongoing support and enhancements.</span>
                       </td>
                       <td class="pp-col-qty"></td>
@@ -1221,8 +1221,8 @@ class Shortcodes {
                 <!-- One-Time Setup Fee -->
                 <div class="option-card-cell card-label card-span3">One-Time Setup Fee</div>
                 <div class="option-card-cell card-cost">$<?php echo esc_html( number_format( $setup_fee, 2 ) ); ?></div>
-                <!-- Annual Subscription Fee -->
-                <div class="option-card-cell card-label card-span3">Annual Subscription Fee</div>
+                <!-- Annual Prime Membership -->
+                <div class="option-card-cell card-label card-span3">Annual Prime Membership</div>
                 <div class="option-card-cell card-cost">$<?php echo esc_html( number_format( $subscription_fee, 2 ) ); ?></div>
                 <!-- Summary row -->
                 <div class="option-card-cell card-label card-span3 card-highlight">Total Cost (Single Payment)</div>
@@ -1966,7 +1966,7 @@ class Shortcodes {
                     </tr>
                     <tr>
                       <td>
-                        <span class="pp-row-label">Annual Subscription Fee <span class="pp-info" title="Ongoing support and enhancements.">i</span></span>
+                        <span class="pp-row-label">Annual Prime Membership <span class="pp-info" title="Ongoing support and enhancements.">i</span></span>
                         <span class="pp-row-sub">Ongoing support and enhancements.</span>
                       </td>
                       <td></td><td></td>
@@ -2025,7 +2025,7 @@ class Shortcodes {
                     </tr>
                     <tr>
                       <td>
-                        <span class="pp-row-label">Annual Subscription Fee <span class="pp-info" title="Ongoing support and enhancements.">i</span></span>
+                        <span class="pp-row-label">Annual Prime Membership <span class="pp-info" title="Ongoing support and enhancements.">i</span></span>
                         <span class="pp-row-sub">Ongoing support and enhancements.</span>
                       </td>
                       <td></td><td></td>
@@ -2271,7 +2271,7 @@ class Shortcodes {
     }
 
     /* ----------------------------------------------------------------
-       [pooprints_fine_tables show="both|breakeven|profit"]
+       [pooprints_fine_tables show="both|breakeven|profit|profit_numbered"]
        Static fine reference tables. No JS required.
     ---------------------------------------------------------------- */
     public static function render_fine_tables( $atts = [] ) {
@@ -2293,7 +2293,7 @@ class Shortcodes {
         ?>
         <div class="pp-ft-container <?php echo $side_by_side ? 'pp-ft-container--side-by-side' : 'pp-ft-container--single'; ?>">
 
-        <?php if ( 'profit' !== $show ) : ?>
+        <?php if ( 'profit' !== $show && 'profit_numbered' !== $show ) : ?>
           <div class="pp-ft-wrap pp-ft-breakeven">
             <div class="pp-ft-title">Breakeven Fine Amount Table Based on Match Ratio</div>
             <table class="pp-ft-table">
@@ -2328,14 +2328,14 @@ class Shortcodes {
           </div>
         <?php endif; ?>
 
-        <?php if ( 'breakeven' !== $show ) : ?>
+        <?php if ( 'breakeven' !== $show && 'profit_numbered' !== $show ) : ?>
           <div class="pp-ft-wrap pp-ft-profit">
-            <div class="pp-ft-title">Waste Testing Profit (Loss) Table with No Row Numbers</div>
+            <div class="pp-ft-title">Waste Testing Profit <span class="pp-ft-loss-word">(Loss)</span> Table with No Row Numbers</div>
             <table class="pp-ft-table">
               <thead>
                 <tr>
                   <th>Dog Owner Charge for Leaving Dog Waste Behind</th>
-                  <th>Profit (Loss) Per Waste Sample Tested For An Average Property</th>
+                  <th>Profit <span class="pp-ft-loss-word">(Loss)</span> Per Waste Sample Tested For An Average Property</th>
                 </tr>
               </thead>
               <tbody>
@@ -2357,6 +2357,53 @@ class Shortcodes {
               ?>
                 <tr class="pp-ft-row<?php echo esc_attr( $row_class ); ?>">
                   <td>$<?php echo esc_html( number_format( $fine, 2 ) ); ?></td>
+                  <td class="<?php echo $is_loss ? 'pp-ft-cell--loss' : 'pp-ft-cell--gain'; ?>">
+                    <?php echo esc_html( $profit_display ); ?>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
+              </tbody>
+            </table>
+            <div class="pp-ft-legend">
+              <span class="pp-ft-legend__item pp-ft-legend__item--breakeven">Breakeven ($<?php echo esc_html( $breakeven_fine ); ?>)</span>
+              <span class="pp-ft-legend__item pp-ft-legend__item--recommended">Recommended ($<?php echo esc_html( $recommended_fine ); ?>)</span>
+            </div>
+          </div>
+        <?php endif; ?>
+
+        <?php if ( 'profit_numbered' === $show ) : ?>
+          <div class="pp-ft-wrap pp-ft-profit pp-ft-profit--numbered">
+            <div class="pp-ft-title">Waste Testing Profit <span class="pp-ft-loss-word">(Loss)</span> Table with Row Numbers</div>
+            <table class="pp-ft-table">
+              <thead>
+                <tr>
+                  <th class="pp-ft-col-row">Row #</th>
+                  <th>Dog Owner Charge for Leaving Dog Waste Behind</th>
+                  <th>Profit <span class="pp-ft-loss-word">(Loss)</span> Per Waste Sample Tested For An Average Property</th>
+                </tr>
+              </thead>
+              <tbody>
+              <?php foreach ( $profit_rows as $i => $fine ) :
+                  $profit   = ( $fine * $avg_match_rate ) - $total_cost;
+                  $is_loss  = $profit < 0;
+                  $row_class = $is_loss ? ' pp-ft-row--loss' : '';
+                  $fine_int  = (int) round( $fine );
+                  if ( abs( $fine_int - $recommended_fine ) <= 5 ) {
+                      $row_class .= ' pp-ft-row--recommended';
+                  } elseif ( abs( $fine_int - $breakeven_fine ) <= 5 ) {
+                      $row_class .= ' pp-ft-row--breakeven';
+                  }
+                  if ( $is_loss ) {
+                      $profit_display = '($' . number_format( abs( $profit ), 0 ) . ')';
+                  } else {
+                      $profit_display = '$' . number_format( $profit, 0 );
+                  }
+                  // Cents only where there are any: $142.94, but $100 rather than $100.00.
+                  $fine_decimals = ( (float) $fine - floor( (float) $fine ) > 0 ) ? 2 : 0;
+              ?>
+                <tr class="pp-ft-row<?php echo esc_attr( $row_class ); ?>">
+                  <td class="pp-ft-col-row"><?php echo esc_html( $i + 1 ); ?></td>
+                  <td>$<?php echo esc_html( number_format( (float) $fine, $fine_decimals ) ); ?></td>
                   <td class="<?php echo $is_loss ? 'pp-ft-cell--loss' : 'pp-ft-cell--gain'; ?>">
                     <?php echo esc_html( $profit_display ); ?>
                   </td>

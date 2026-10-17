@@ -801,6 +801,12 @@
 .pp-ft-row--breakeven td { background: #fff8e1; font-weight: 700; color: #7c5000; }
 .pp-ft-cell--loss { font-weight: 700; color: #c0392b; }
 .pp-ft-cell--gain { font-weight: 600; color: #1b5e20; }
+/* "(Loss)" in the headings. The title bar is near-black, so it gets a lighter red
+   than the grey header row to stay readable. */
+.pp-ft-loss-word { color: #c0392b; }
+.pp-ft-title .pp-ft-loss-word { color: #ff6b6b; }
+/* Row # column in [pooprints_fine_tables show="profit_numbered"] */
+.pp-ft-table thead th.pp-ft-col-row { text-align: center; width: 1%; white-space: nowrap; }
 .pp-ft-legend {
   padding: 10px 14px;
   background: #f9f9fb;
