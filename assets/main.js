@@ -437,7 +437,7 @@ document.addEventListener('DOMContentLoaded', function () {
       var el      = document.getElementById(entry.id);
       if (!el) return;
       var current = parseFloat(el.value);
-      if (current !== parseFloat(entry.default)) {
+      if (!isNaN(current) && current !== parseFloat(entry.default)) {
         params.set(param, current);
       }
     });
@@ -464,6 +464,48 @@ document.addEventListener('DOMContentLoaded', function () {
         console.warn('[PooPrints] Clipboard write failed. URL:', url);
       });
     });
+  });
+
+  /* ============================================================
+     FORWARD QUOTE (email) — <a class="pp-forward-params" href="mailto:...">
+     The page's own script writes the email on click, linking back to this
+     page. This adds every calculator field the visitor changed to that link,
+     so the recipient opens the same quote. Params the link already carries
+     are left as they are. Listening on document means this runs after the
+     link's own click listeners, so the email is already written.
+     ============================================================ */
+  function withQuoteParams(link) {
+    var url = new URL(link);
+    new URL(buildQuoteURL()).searchParams.forEach(function (value, key) {
+      if (!url.searchParams.has(key)) url.searchParams.set(key, value);
+    });
+    return url.href;
+  }
+
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a.pp-forward-params[href^="mailto:"]');
+    if (!a) return;
+    var href = a.getAttribute('href');
+    var q    = href.indexOf('?');
+    if (q === -1) return;
+
+    var mail = new URLSearchParams(href.slice(q + 1));
+    var body = mail.get('body');
+    if (!body) return;
+
+    // The link to this page inside the email body, up to the next whitespace.
+    var page  = window.location.origin + window.location.pathname;
+    var match = body.match(new RegExp(page.replace(/[.*+?^${}()|[\]\\\/]/g, '\\$&') + '\\S*'));
+    if (!match) return;
+    mail.set('body', body.replace(match[0], withQuoteParams(match[0])));
+
+    // Re-encode with encodeURIComponent: URLSearchParams.toString() writes
+    // spaces as '+', which mail apps show literally.
+    var parts = [];
+    mail.forEach(function (value, key) {
+      parts.push(key + '=' + encodeURIComponent(value));
+    });
+    a.setAttribute('href', href.slice(0, q + 1) + parts.join('&'));
   });
 
   /* ============================================================

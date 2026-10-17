@@ -931,6 +931,7 @@ class Settings_Page {
             <p><?php esc_html_e( 'Append these to any page URL containing the calculators to pre-fill inputs. Example:', 'pooprints-calculator' ); ?>
                 <code>?o1_qty_swab=15&amp;units=100&amp;dogs=15</code>
             </p>
+            <p><?php esc_html_e( 'Forward Quote email buttons: add the class pp-forward-params to a mailto: link. When it is clicked, every calculator field the visitor changed from its default is added to the link back to this page inside the email body, so the recipient opens the same quote. Params the link already carries are kept as they are.', 'pooprints-calculator' ); ?></p>
 
             <table class="widefat striped" style="margin-top: 12px;">
                 <thead>
