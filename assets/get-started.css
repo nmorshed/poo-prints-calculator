@@ -1,3 +1,23 @@
+/* ============================================================
+   Carried over from style.css when its .pp-getstarted copy was removed.
+   These are the only declarations from that copy that this file did not
+   already set. Keep them first: style.css used to load before this file,
+   so every rule below this block still wins where both set a property.
+   ============================================================ */
+.pp-getstarted .pp-wrap { max-width: 1100px; padding: 0 24px; }
+.pp-getstarted .pp-hero { padding: 56px 0 40px; }
+.pp-getstarted .pp-section { background: var(--pp-bg); padding: 56px 0; }
+.pp-getstarted .pp-card:hover { border-color: var(--pp-border-strong); box-shadow: var(--pp-shadow-md); }
+.pp-getstarted .pp-price-label { margin-bottom: 4px; }
+.pp-getstarted .pp-confirm { padding: 48px 0 16px; }
+.pp-getstarted .pp-help { padding-bottom: 32px; }
+@media (max-width: 720px) {
+  .pp-getstarted .pp-table tbody td { padding: 14px 12px; font-size: 13.5px; }
+  .pp-getstarted .pp-table thead th { padding: 8px 12px; }
+  .pp-getstarted .pp-section { padding: 40px 0; }
+  .pp-getstarted .pp-hero { padding: 40px 0 28px; }
+}
+
 .pp-getstarted {
     --pp-red: #E11D2E;
     --pp-red-dark: #B81522;

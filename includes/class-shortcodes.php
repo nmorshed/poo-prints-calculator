@@ -994,7 +994,7 @@ class Shortcodes {
         if ( '2' === $template ) {
             ob_start();
             ?>
-            <div class="pp-getstarted">
+            <div class="pp-getstarted pp-gs-plugin">
               <div class="pp-table-wrap" id="pp-table-opt1">
                 <div class="pp-table-title">Option 1 &#8212; Fastest Results &#8212; Full Rollout</div>
                 <div class="pp-table-banner">Register every dog at the start for fastest results.</div>
@@ -1130,7 +1130,7 @@ class Shortcodes {
         if ( '2' === $template ) {
             ob_start();
             ?>
-            <div class="pp-getstarted">
+            <div class="pp-getstarted pp-gs-plugin">
               <div class="pp-table-wrap" id="pp-table-opt2">
                 <div class="pp-table-title">Option 2 &#8212; Save Money &#8212; Phased Rollout</div>
                 <div class="pp-table-banner">Start with fewer dogs; add more as leases renew.</div>
@@ -2330,7 +2330,7 @@ class Shortcodes {
 
         <?php if ( 'breakeven' !== $show && 'profit_numbered' !== $show ) : ?>
           <div class="pp-ft-wrap pp-ft-profit">
-            <div class="pp-ft-title">Waste Testing Profit <span class="pp-ft-loss-word">(Loss)</span> Table with No Row Numbers</div>
+            <div class="pp-ft-title">Waste Testing Profit <span class="pp-ft-loss-word">(Loss)</span> Table</div>
             <table class="pp-ft-table">
               <thead>
                 <tr>
