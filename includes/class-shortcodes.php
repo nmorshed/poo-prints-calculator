@@ -253,6 +253,16 @@ class Shortcodes {
     }
 
     /**
+     * [which_quote_to_present]: the empty message slot under a required field. form-v2.js
+     * fills it and points the field's aria-describedby at it. aria-hidden keeps the text out
+     * of the wrapping <label>'s accessible name; screen readers still announce it as the
+     * field's description, because aria-describedby reads hidden elements it points at.
+     */
+    private static function quote_field_error( $name ) {
+        return sprintf( '<span class="pp-field-error" id="pp-qp-%s-error" aria-hidden="true"></span>', esc_attr( $name ) );
+    }
+
+    /**
      * PooPrints Form v2: render the quote routing form.
      */
     public static function render_which_quote_to_present() {
@@ -288,60 +298,71 @@ class Shortcodes {
                 <section class="pp-quote-present__card is-active" data-pp-quote-step="2">
                     <p class="pp-quote-present__intro">A few details about the location so we can build your custom quote.</p>
                     <div class="pp-quote-present__grid">
-                        <label class="pp-field pp-field--span-6">Job Title *
-                            <input name="JobTitle" type="text" value="<?php echo esc_attr( $values['JobTitle'] ); ?>" placeholder="Property Manager, Owner, etc." required>
+                        <label class="pp-field pp-field--span-6">Job title *
+                            <input id="pp-qp-JobTitle" name="JobTitle" type="text" value="<?php echo esc_attr( $values['JobTitle'] ); ?>" placeholder="Property Manager, Owner, etc." autocomplete="organization-title" data-pp-error="Please enter your job title." required>
+                            <?php echo self::quote_field_error( 'JobTitle' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
                         </label>
-                        <label class="pp-field pp-field--span-6">Management Co Name *
-                            <input name="_OwnerManager" type="text" value="<?php echo esc_attr( $values['_OwnerManager'] ); ?>" placeholder="Enter management company name" required>
+                        <label class="pp-field pp-field--span-6">Management company *
+                            <input id="pp-qp-_OwnerManager" name="_OwnerManager" type="text" value="<?php echo esc_attr( $values['_OwnerManager'] ); ?>" placeholder="Enter management company name" autocomplete="organization" data-pp-error="Please enter your management company." required>
+                            <?php echo self::quote_field_error( '_OwnerManager' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
                         </label>
-                        <label class="pp-field pp-field--full">Street Address *
-                            <input name="StreetAddress1" type="text" value="<?php echo esc_attr( $values['StreetAddress1'] ); ?>" placeholder="Street address" required>
+                        <label class="pp-field pp-field--full">Street address *
+                            <input id="pp-qp-StreetAddress1" name="StreetAddress1" type="text" value="<?php echo esc_attr( $values['StreetAddress1'] ); ?>" placeholder="Street address" autocomplete="address-line1" data-pp-error="Please enter your street address." required>
+                            <?php echo self::quote_field_error( 'StreetAddress1' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
                         </label>
-                        <label class="pp-field pp-field--full">Address Line 2
-                            <input name="StreetAddress2" type="text" value="<?php echo esc_attr( $values['StreetAddress2'] ); ?>" placeholder="Suite, Unit #, Leasing Office or ATTN:">
+                        <label class="pp-field pp-field--full">Address line 2
+                            <input id="pp-qp-StreetAddress2" name="StreetAddress2" type="text" value="<?php echo esc_attr( $values['StreetAddress2'] ); ?>" placeholder="Suite, Unit #, Leasing Office or ATTN:" autocomplete="address-line2">
                         </label>
                         <label class="pp-field pp-field--span-6">City *
-                            <input name="City" type="text" value="<?php echo esc_attr( $values['City'] ); ?>" placeholder="City" required>
+                            <input id="pp-qp-City" name="City" type="text" value="<?php echo esc_attr( $values['City'] ); ?>" placeholder="City" autocomplete="address-level2" data-pp-error="Please enter your city." required>
+                            <?php echo self::quote_field_error( 'City' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
                         </label>
                         <label class="pp-field pp-field--span-3">State *
-                            <input name="State" type="text" value="<?php echo esc_attr( $values['State'] ); ?>" placeholder="State" required>
+                            <input id="pp-qp-State" name="State" type="text" value="<?php echo esc_attr( $values['State'] ); ?>" placeholder="State" autocomplete="address-level1" data-pp-error="Please enter your state." required>
+                            <?php echo self::quote_field_error( 'State' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
                         </label>
-                        <label class="pp-field pp-field--span-3">Postal Code *
-                            <input name="PostalCode" type="text" value="<?php echo esc_attr( $values['PostalCode'] ); ?>" inputmode="numeric" placeholder="ZIP" required>
+                        <label class="pp-field pp-field--span-3">Postal code *
+                            <input id="pp-qp-PostalCode" name="PostalCode" type="text" value="<?php echo esc_attr( $values['PostalCode'] ); ?>" inputmode="numeric" placeholder="ZIP" autocomplete="postal-code" maxlength="10" data-pp-error="Please enter your postal code." required>
+                            <?php echo self::quote_field_error( 'PostalCode' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
                         </label>
-                        <label class="pp-field pp-field--full">How Did You Hear About Us? *
-                            <textarea name="_HowDidYouHearAboutUs" rows="4" placeholder="Referral, search, conference, etc." required><?php echo esc_textarea( $values['_HowDidYouHearAboutUs'] ); ?></textarea>
+                        <label class="pp-field pp-field--full">How did you hear about us? *
+                            <textarea id="pp-qp-_HowDidYouHearAboutUs" name="_HowDidYouHearAboutUs" rows="4" placeholder="Referral, search, conference, etc." data-pp-error="Please tell us how you heard about us." required><?php echo esc_textarea( $values['_HowDidYouHearAboutUs'] ); ?></textarea>
+                            <?php echo self::quote_field_error( '_HowDidYouHearAboutUs' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
                         </label>
                     </div>
-                    <button type="button" class="pp-quote-present__button" data-pp-quote-next>Continue</button>
+                    <button type="button" class="pp-quote-present__button" data-pp-quote-next><span class="btn-label">Continue</span></button>
                     <p class="pp-quote-present__secure"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Your information is secure</p>
                 </section>
 
                 <section class="pp-quote-present__card" data-pp-quote-step="3">
                     <p class="pp-quote-present__intro">Last step &mdash; tell us about the dogs we'll be DNA-testing.</p>
                     <div class="pp-quote-present__grid">
-                        <label class="pp-field pp-field--full">Quote Property Type *
-                            <select name="_KindofPropertyQuoteFor" required>
+                        <label class="pp-field pp-field--full">Quote property type *
+                            <select id="pp-qp-_KindofPropertyQuoteFor" name="_KindofPropertyQuoteFor" data-pp-error="Please select a quote property type." required>
                                 <option value="">Please select one</option>
                                 <?php foreach ( $quote_options as $option ) : ?>
                                     <option value="<?php echo esc_attr( $option ); ?>" <?php selected( $values['_KindofPropertyQuoteFor'], $option ); ?>><?php echo esc_html( $option ); ?></option>
                                 <?php endforeach; ?>
                             </select>
+                            <?php echo self::quote_field_error( '_KindofPropertyQuoteFor' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
                         </label>
-                        <label class="pp-field pp-field--span-6">Estimated # of Dogs *
-                            <input name="_ofDogs" type="number" value="<?php echo esc_attr( $values['_ofDogs'] ); ?>" min="1" step="1" required>
+                        <label class="pp-field pp-field--span-6">Estimated number of dogs *
+                            <input id="pp-qp-_ofDogs" name="_ofDogs" type="number" value="<?php echo esc_attr( $values['_ofDogs'] ); ?>" min="1" step="1" inputmode="numeric" data-pp-error="Please enter the number of dogs." required>
+                            <?php echo self::quote_field_error( '_ofDogs' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
                         </label>
-                        <label class="pp-field pp-field--span-6"># of Units *
-                            <input name="_ofUnits" type="number" value="<?php echo esc_attr( $values['_ofUnits'] ); ?>" min="1" step="1" required>
+                        <label class="pp-field pp-field--span-6">Number of units *
+                            <input id="pp-qp-_ofUnits" name="_ofUnits" type="number" value="<?php echo esc_attr( $values['_ofUnits'] ); ?>" min="1" step="1" inputmode="numeric" data-pp-error="Please enter the number of units." required>
+                            <?php echo self::quote_field_error( '_ofUnits' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
                         </label>
-                        <label class="pp-field pp-field--full">How Many Properties is the # of Dogs For? *
-                            <input name="_QuoteforHowManyProperties" type="number" value="<?php echo esc_attr( $values['_QuoteforHowManyProperties'] ); ?>" min="1" step="1" required>
+                        <label class="pp-field pp-field--full">How many properties is this dog count for? *
+                            <input id="pp-qp-_QuoteforHowManyProperties" name="_QuoteforHowManyProperties" type="number" value="<?php echo esc_attr( $values['_QuoteforHowManyProperties'] ); ?>" min="1" step="1" inputmode="numeric" data-pp-error="Please enter how many properties this dog count is for." required>
+                            <?php echo self::quote_field_error( '_QuoteforHowManyProperties' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
                         </label>
                         <label class="pp-field pp-field--full">Comments
-                            <textarea name="_QuoteComments" rows="5"><?php echo esc_textarea( $values['_QuoteComments'] ); ?></textarea>
+                            <textarea id="pp-qp-_QuoteComments" name="_QuoteComments" rows="5"><?php echo esc_textarea( $values['_QuoteComments'] ); ?></textarea>
                         </label>
                     </div>
-                    <button type="button" class="pp-quote-present__button" data-pp-quote-submit>Request My Free Quote</button>
+                    <button type="button" class="pp-quote-present__button" data-pp-quote-submit><span class="btn-label">Request my free quote</span></button>
                     <p class="pp-quote-present__secure"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Your information is secure</p>
                 </section>
 

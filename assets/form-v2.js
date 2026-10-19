@@ -416,21 +416,73 @@
     return root.querySelector('[data-pp-quote-step="' + currentStep + '"]');
   }
 
+  /* Field errors are shown in the page, never as browser pop-ups: the message goes in
+     the field's <span class="pp-field-error" id="{field id}-error">, the field gets
+     aria-invalid + aria-describedby, and its .pp-field wrapper gets .is-invalid.
+     Messages come from each field's data-pp-error attribute (set in PHP). */
+  var NUMBER_MESSAGE = 'Please enter a whole number of 1 or more.';
+
+  function fieldMessage(field) {
+    var validity = field.validity || {};
+    if (field.type === 'number' && (validity.badInput || validity.rangeUnderflow || validity.stepMismatch)) {
+      return NUMBER_MESSAGE;
+    }
+    // Spaces alone pass the browser's "required" check, so trim first.
+    if (field.required && !String(field.value).trim()) {
+      return field.getAttribute('data-pp-error') || 'This field is required.';
+    }
+    if (validity.valid === false) {
+      return field.getAttribute('data-pp-error') || field.validationMessage;
+    }
+    return '';
+  }
+
+  function showFieldError(field, text) {
+    var slot = field.id ? document.getElementById(field.id + '-error') : null;
+    var wrap = field.closest('.pp-field');
+    if (slot) slot.textContent = text;
+    if (text) {
+      field.setAttribute('aria-invalid', 'true');
+      if (slot) field.setAttribute('aria-describedby', slot.id);
+    } else {
+      field.removeAttribute('aria-invalid');
+      field.removeAttribute('aria-describedby');
+    }
+    if (wrap) wrap.classList.toggle('is-invalid', !!text);
+  }
+
   function validateStep() {
     var panel = activePanel();
     if (!panel) return true;
 
-    var fields = Array.prototype.slice.call(panel.querySelectorAll('input, select, textarea'));
-    for (var i = 0; i < fields.length; i++) {
-      var field = fields[i];
-      if (field.disabled || field.offsetParent === null) continue;
-      if (!field.checkValidity()) {
-        field.reportValidity();
-        return false;
-      }
-    }
-    return true;
+    var firstInvalid = null;
+    Array.prototype.slice.call(panel.querySelectorAll('input, select, textarea')).forEach(function (field) {
+      if (field.disabled || field.type === 'hidden' || field.offsetParent === null) return;
+      var text = fieldMessage(field);
+      showFieldError(field, text);
+      if (text && !firstInvalid) firstInvalid = field;
+    });
+    if (firstInvalid) firstInvalid.focus();
+    return !firstInvalid;
   }
+
+  // Once a field is flagged, re-check it as it changes: the message clears the moment
+  // it is fixed. Fields not yet flagged stay quiet while the visitor is still typing.
+  function recheckField(event) {
+    var field = event.target;
+    if (field && field.getAttribute && field.getAttribute('aria-invalid') === 'true') {
+      showFieldError(field, fieldMessage(field));
+    }
+  }
+  form.addEventListener('input', recheckField);
+  form.addEventListener('change', recheckField);
+
+  // Saving states change only the .btn-label text, so any icon in the button stays.
+  function setButtonLabel(button, text) {
+    var label = button.querySelector('.btn-label') || button;
+    label.textContent = text;
+  }
+  var nextLabel = nextBtn ? (nextBtn.querySelector('.btn-label') || nextBtn).textContent : 'Continue';
 
   function submitStep(step) {
     var data = new FormData(form);
@@ -489,7 +541,7 @@
       if (!validateStep()) return;
 
       nextBtn.disabled = true;
-      nextBtn.textContent = 'Saving...';
+      setButtonLabel(nextBtn, 'Saving…');
       showNotice('', 'info');
 
       submitStep(2).then(function () {
@@ -499,7 +551,7 @@
         showNotice(error.message, 'error');
       }).finally(function () {
         nextBtn.disabled = false;
-        nextBtn.textContent = 'Continue';
+        setButtonLabel(nextBtn, nextLabel);
       });
     });
   }
