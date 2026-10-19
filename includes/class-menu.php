@@ -37,6 +37,7 @@ class Menu {
         $tabs = [
             'settings'       => __( 'General', 'pooprints-calculator' ),
             'pricing-rates'  => __( 'Pricing & Rates', 'pooprints-calculator' ),
+            'saved-data'     => __( 'Saved Calculator Data', 'pooprints-calculator' ),
             'how-to-use'     => __( 'How to Use', 'pooprints-calculator' ),
         ];
         ?>
@@ -65,6 +66,8 @@ class Menu {
                     Settings_Page::render_pricing_tab();
                 } elseif ( $current_tab === 'how-to-use' ) {
                     Settings_Page::render_how_to_use_tab();
+                } elseif ( $current_tab === 'saved-data' ) {
+                    Saved_Data::render_tab();
                 }
                 ?>
             </div>

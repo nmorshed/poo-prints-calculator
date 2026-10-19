@@ -84,7 +84,46 @@ class Shortcodes {
     }
 
     /**
-     * Resolve a calculator field: URL param → Keap (Memberium) → default from field_map().
+     * Values to render instead of the visitor's own, keyed like field_map(). Set only
+     * through render_with_values() (the admin's Saved Calculator Data view); while set,
+     * the URL, the viewer's saved data and Keap are all ignored.
+     */
+    private static $values_override = null;
+
+    /**
+     * Render calculator shortcodes with a fixed set of values, e.g. a user's saved data.
+     *
+     * @param array    $values   Values keyed like field_map(); missing keys use their default.
+     * @param callable $render   Returns the HTML to output.
+     * @return string
+     */
+    public static function render_with_values( array $values, callable $render ) {
+        $previous              = self::$values_override;
+        self::$values_override = $values;
+        try {
+            return $render();
+        } finally {
+            self::$values_override = $previous;
+        }
+    }
+
+    /**
+     * The value given explicitly for a field, or null when there is none:
+     * the admin override → URL param → the logged-in visitor's saved data.
+     */
+    private static function explicit_value( $param_key ) {
+        if ( null !== self::$values_override ) {
+            return isset( self::$values_override[ $param_key ] ) ? self::$values_override[ $param_key ] : null;
+        }
+        if ( isset( $_GET[ $param_key ] ) && $_GET[ $param_key ] !== '' ) {
+            return wp_unslash( $_GET[ $param_key ] );
+        }
+        $saved = is_user_logged_in() ? Saved_Data::get_values( get_current_user_id() ) : [];
+        return isset( $saved[ $param_key ] ) ? $saved[ $param_key ] : null;
+    }
+
+    /**
+     * Resolve a calculator field: URL param → saved data → Keap (Memberium) → default from field_map().
      *
      * @param string $param_key URL query key, e.g. 'd', 'u', 'hd'.
      * @return int|float
@@ -96,12 +135,13 @@ class Shortcodes {
         }
         list( $keap, $type, $default ) = $map[ $param_key ];
 
-        if ( isset( $_GET[ $param_key ] ) && $_GET[ $param_key ] !== '' ) {
-            $raw_get = wp_unslash( $_GET[ $param_key ] );
-            return 'float' === $type ? floatval( $raw_get ) : absint( $raw_get );
+        $explicit = self::explicit_value( $param_key );
+        if ( null !== $explicit ) {
+            return 'float' === $type ? floatval( $explicit ) : absint( $explicit );
         }
 
-        if ( $keap && function_exists( 'memb_getContactField' ) ) {
+        // Keap is the viewer's own contact, so it never fills in someone else's values.
+        if ( null === self::$values_override && $keap && function_exists( 'memb_getContactField' ) ) {
             $raw = memb_getContactField( $keap, true );
             if ( is_string( $raw ) ) {
                 $raw = trim( $raw );
@@ -115,12 +155,13 @@ class Shortcodes {
     }
 
     /**
-     * Option card swab qty: ?o1_qty_swab → ?dogs → Memberium dogs → settings default.
+     * Option card swab qty: ?o1_qty_swab → saved swab qty → dogs (resolved as above) → settings default.
      * When $fallback_to_dogs is false, falls back to the swab param's own settings default instead.
      */
     private static function resolve_option_swab_qty( $swab_param, $fallback_to_dogs = false ) {
-        if ( isset( $_GET[ $swab_param ] ) && $_GET[ $swab_param ] !== '' ) {
-            return absint( wp_unslash( $_GET[ $swab_param ] ) );
+        $explicit = self::explicit_value( $swab_param );
+        if ( null !== $explicit ) {
+            return absint( $explicit );
         }
         if ( $fallback_to_dogs ) {
             return (int) self::resolve_field( 'dogs' );

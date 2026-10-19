@@ -22,6 +22,7 @@ require_once POOPRINTS_DIR . 'includes/class-menu.php';
 require_once POOPRINTS_DIR . 'includes/class-assets.php';
 require_once POOPRINTS_DIR . 'includes/class-shortcodes.php';
 require_once POOPRINTS_DIR . 'includes/class-ajax.php';
+require_once POOPRINTS_DIR . 'includes/class-saved-data.php';
 
 add_action( 'init', function () {
     PooPrints\Menu::init();

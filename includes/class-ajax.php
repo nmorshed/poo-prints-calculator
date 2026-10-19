@@ -14,6 +14,24 @@ class Ajax {
         add_action( 'wp_ajax_nopriv_pooprints_form_v2_submit', [ __CLASS__, 'submit_form_v2' ] );
         add_action( 'wp_ajax_which_quote_to_present_submit', [ __CLASS__, 'submit_which_quote_to_present' ] );
         add_action( 'wp_ajax_nopriv_which_quote_to_present_submit', [ __CLASS__, 'submit_which_quote_to_present' ] );
+        // Logged-in only on purpose: there is no nopriv hook, so visitors are never saved.
+        add_action( 'wp_ajax_pooprints_save_calculator', [ __CLASS__, 'save_calculator' ] );
+    }
+
+    /** Store the logged-in user's calculator values (posted by main.js) in their user meta. */
+    public static function save_calculator() {
+        if ( ! is_user_logged_in() || ! check_ajax_referer( 'pooprints_save_calculator', 'nonce', false ) ) {
+            wp_send_json_error( [ 'message' => 'Not allowed.' ], 403 );
+        }
+        $values = isset( $_POST['values'] ) && is_array( $_POST['values'] ) ? wp_unslash( $_POST['values'] ) : [];
+        $source = isset( $_POST['source'] ) ? wp_unslash( $_POST['source'] ) : '';
+
+        // The user is always the one logged in; the request cannot name another user.
+        $data = Saved_Data::save( get_current_user_id(), $values, is_string( $source ) ? $source : '' );
+        if ( false === $data ) {
+            wp_send_json_error( [ 'message' => 'Could not save.' ], 500 );
+        }
+        wp_send_json_success( [ 'updated' => $data['updated'] ] );
     }
 
     /** Handle the independent #pp-place-order link on the Get Started page. */

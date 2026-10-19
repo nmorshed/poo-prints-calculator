@@ -762,6 +762,32 @@ class Settings_Page {
         <?php
     }
 
+    /**
+     * Human labels for the calculator fields, keyed like Shortcodes::field_map().
+     * Used by the How to Use tab and the Saved Calculator Data tab.
+     */
+    public static function field_labels() {
+        return [
+            'o1_qty_swab'           => 'Option 1 DNA swab kit qty',
+            'o1_qty_waste'          => 'Option 1 waste collection kit qty',
+            'o2_qty_swab'           => 'Option 2 DNA swab kit qty',
+            'units'                 => 'Total # of units',
+            'dogs'                  => 'Total # of dogs',
+            'rent_per_dog'          => 'Monthly rent per dog',
+            'dog_fee'               => 'One-time dog fee',
+            'hidden_dogs'           => 'Estimated hidden dogs',
+            'staff_wage'            => 'Staff hourly wage',
+            'turnover_cost'         => 'Turnover cost per unit',
+            'acquisition_cost'      => 'Renter acquisition cost',
+            'renewals_saved'        => 'Lease renewals saved per year',
+            'complaints_per_week'   => 'Dog waste complaints per week',
+            'minutes_email'         => 'Minutes per email complaint',
+            'minutes_phone'         => 'Minutes per phone complaint',
+            'minutes_social'        => 'Minutes per social complaint',
+            'pickup_hours_per_week' => 'Staff pickup hours per week',
+        ];
+    }
+
     public static function render_how_to_use_tab() {
         $shortcodes = [
             '[pooprints_option1]'          => __( 'Renders the Option 1 calculator card.', 'pooprints-calculator' ),
@@ -846,25 +872,7 @@ class Settings_Page {
             ],
         ];
 
-        $url_params = [
-            'o1_qty_swab'           => 'Option 1 DNA swab kit qty',
-            'o1_qty_waste'          => 'Option 1 waste collection kit qty',
-            'o2_qty_swab'           => 'Option 2 DNA swab kit qty',
-            'units'                 => 'Total # of units',
-            'dogs'                  => 'Total # of dogs',
-            'rent_per_dog'          => 'Monthly rent per dog',
-            'dog_fee'               => 'One-time dog fee',
-            'hidden_dogs'           => 'Estimated hidden dogs',
-            'staff_wage'            => 'Staff hourly wage',
-            'turnover_cost'         => 'Turnover cost per unit',
-            'acquisition_cost'      => 'Renter acquisition cost',
-            'renewals_saved'        => 'Lease renewals saved per year',
-            'complaints_per_week'   => 'Dog waste complaints per week',
-            'minutes_email'         => 'Minutes per email complaint',
-            'minutes_phone'         => 'Minutes per phone complaint',
-            'minutes_social'        => 'Minutes per social complaint',
-            'pickup_hours_per_week' => 'Staff pickup hours per week',
-        ];
+        $url_params = self::field_labels();
         ?>
         <div style="max-width: 760px;">
 
@@ -927,6 +935,9 @@ class Settings_Page {
                     <?php endforeach; ?>
                 </tbody>
             </table>
+
+            <h3 style="margin-top: 32px;"><?php esc_html_e( 'Saved calculator data', 'pooprints-calculator' ); ?></h3>
+            <p><?php esc_html_e( 'When a logged-in user changes any calculator value (or presses Reset), all of their calculator values are saved to their user meta (user_calculator_data) 2 seconds after the last change. Their saved values pre-fill the calculator on their next visit. Each value is taken from, in order: the URL, the saved data, Keap, then the default. Admins can view each user\'s saved calculator, read-only, on the Saved Calculator Data tab.', 'pooprints-calculator' ); ?></p>
 
             <h3 style="margin-top: 32px;"><?php esc_html_e( 'URL Query Params (for pre-filling via forwarded links)', 'pooprints-calculator' ); ?></h3>
             <p><?php esc_html_e( 'Append these to any page URL containing the calculators to pre-fill inputs. Example:', 'pooprints-calculator' ); ?>

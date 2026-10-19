@@ -10,6 +10,7 @@ class Assets {
         add_action( 'wp_enqueue_scripts', [ __CLASS__, 'register_assets' ] );
         add_action( 'wp_footer', [ __CLASS__, 'maybe_enqueue' ], 20 );
         add_action( 'wp_footer', [ __CLASS__, 'maybe_print_late_styles' ], 21 );
+        add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_admin' ] );
     }
 
     public static function register_assets() {
@@ -106,7 +107,34 @@ class Assets {
             wp_enqueue_script( 'pooprints-get-started' );
         }
 
-        wp_localize_script( 'pooprints-calculator', 'ppPrices', [
+        wp_localize_script( 'pooprints-calculator', 'ppPrices', self::calculator_data( is_user_logged_in() ) );
+
+    }
+
+    /**
+     * Settings → PooPrints Calculator → Saved Calculator Data, with a user selected:
+     * load the calculator there to show that user's values. Saving is off, so viewing
+     * can never write to anyone's data.
+     */
+    public static function enqueue_admin( $hook ) {
+        if ( 'settings_page_pooprints-calculator' !== $hook
+            || ! isset( $_GET['tab'] ) || 'saved-data' !== $_GET['tab']
+            || ! Saved_Data::selected_user_id() ) {
+            return;
+        }
+        self::register_assets();
+        wp_enqueue_style( 'pooprints-calculator' );
+        wp_enqueue_script( 'pooprints-calculator' );
+        wp_localize_script( 'pooprints-calculator', 'ppPrices', self::calculator_data( false ) );
+    }
+
+    /**
+     * The ppPrices object main.js reads.
+     *
+     * @param bool $save_enabled Whether main.js saves this visitor's values (logged-in front end only).
+     */
+    private static function calculator_data( $save_enabled ) {
+        return [
             'ajax_url'             => admin_url( 'admin-ajax.php' ),
             'nonce'                => wp_create_nonce( 'pooprints_update_units' ),
             'swab_kit'            => (float) Settings_Page::get('price_swab_kit'),
@@ -122,8 +150,13 @@ class Assets {
             'regression_b'         => (float) Settings_Page::get('regression_b'),
             'regression_c'         => (float) Settings_Page::get('regression_c'),
             'field_map'            => self::build_field_map(),
-        ] );
-
+            'save'                 => [
+                'enabled' => (bool) $save_enabled,
+                'action'  => 'pooprints_save_calculator',
+                'nonce'   => $save_enabled ? wp_create_nonce( 'pooprints_save_calculator' ) : '',
+                'delay'   => 2000, // ms after the last change
+            ],
+        ];
     }
 
     public static function enqueue_form_v2() {

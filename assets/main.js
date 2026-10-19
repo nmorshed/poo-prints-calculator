@@ -162,6 +162,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // have to be told: otherwise their announced value and the URL keep the old
     // number while the page shows the default.
     refreshEditables();
+    // Reset fires no input events either, so the saved values are told directly.
+    scheduleSave();
     set('roiResetNoticeText', 'All fields are reset except the # of units & # of dogs.');
     var resetNotice = document.getElementById('roiResetNotice');
     if (resetNotice) resetNotice.classList.add('is-visible');
@@ -507,6 +509,77 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     a.setAttribute('href', href.slice(0, q + 1) + parts.join('&'));
   });
+
+  /* ============================================================
+     SAVE PER USER — logged-in visitors only (ppPrices.save.enabled).
+
+     2 seconds after the last change, every calculator value on the page is
+     posted and stored in the user's meta (user_calculator_data), which pre-fills
+     the calculator on their next visit. Only real changes trigger a save: a
+     keystroke, a field's arrows, the -/+ stepper (it fires 'input'), or Reset.
+     The calculator painting itself on page load fires no events, so loading a
+     page never saves.
+     ============================================================ */
+  var SAVE = pp.save || {};
+  var saveTimer = null;
+  // template="2" tables hold the kit quantities in [data-pp-line] inputs, not id'd fields.
+  var LINE_FIELDS = { dna: 'o1_qty_swab', waste: 'o1_qty_waste', dna2: 'o2_qty_swab' };
+
+  function collectValues() {
+    var values = {};
+    Object.keys(FIELD_MAP).forEach(function (param) {
+      var el = document.getElementById(FIELD_MAP[param].id);
+      if (el && el.value !== '') values[param] = el.value;
+    });
+    document.querySelectorAll('[data-pp-line]').forEach(function (el) {
+      var param = LINE_FIELDS[el.getAttribute('data-pp-line')];
+      if (param && !(param in values) && el.value !== '') values[param] = el.value;
+    });
+    return values;
+  }
+
+  function saveBody() {
+    var body = new FormData();
+    body.append('action', SAVE.action);
+    body.append('nonce', SAVE.nonce);
+    body.append('source', window.location.pathname);
+    var values = collectValues();
+    Object.keys(values).forEach(function (param) {
+      body.append('values[' + param + ']', values[param]);
+    });
+    return body;
+  }
+
+  function sendSave() {
+    saveTimer = null;
+    fetch(pp.ajax_url, { method: 'POST', credentials: 'same-origin', body: saveBody() })
+      .catch(function () { /* offline or blocked: the next change tries again */ });
+  }
+
+  function scheduleSave() {
+    if (!SAVE.enabled) return;
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(sendSave, SAVE.delay || 2000);
+  }
+
+  function isCalculatorField(el) {
+    if (!el || !el.matches) return false;
+    if (el.matches('[data-pp-line]')) return true;
+    return !!el.id && Object.keys(FIELD_MAP).some(function (param) { return FIELD_MAP[param].id === el.id; });
+  }
+
+  if (SAVE.enabled) {
+    document.addEventListener('input', function (e) {
+      if (isCalculatorField(e.target)) scheduleSave();
+    });
+    // Leaving within the 2 seconds: send what is pending instead of losing it.
+    window.addEventListener('pagehide', function () {
+      if (!saveTimer) return;
+      clearTimeout(saveTimer);
+      saveTimer = null;
+      if (navigator.sendBeacon) navigator.sendBeacon(pp.ajax_url, saveBody());
+    });
+  }
 
   /* ============================================================
      SYNC roi_units → Keap _ofUnits on change
