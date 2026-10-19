@@ -1,3 +1,129 @@
+/* ============================================================
+   Field errors, shared by [pooprints_form_v2] and [which_quote_to_present].
+
+   Messages show in the page, never as browser pop-ups. Each required field's
+   wrapper holds an empty <span class="pp-field-error"> (a .pp-field label for
+   text fields and selects, a fieldset.pp-choice for Yes/No radios). On a failed
+   step the message goes in that span, the field gets aria-invalid +
+   aria-describedby, the wrapper gets .is-invalid, and focus moves to the first
+   problem. A flagged field re-checks as it changes, so its message clears the
+   moment it is fixed. Wording comes from data-pp-error (and data-pp-error-number
+   for a filled-in but invalid number), set in PHP.
+   ============================================================ */
+var ppFieldErrors = (function () {
+  var NUMBER_MESSAGE = 'Please enter a whole number of 1 or more.';
+  var EMAIL_MESSAGE = 'Please enter a valid email address.';
+  var CHOICE_MESSAGE = 'Please choose Yes or No.';
+  var uid = 0;
+
+  function wrapperFor(field) {
+    return field.type === 'radio' ? field.closest('fieldset') : field.closest('.pp-field');
+  }
+
+  function radiosOf(field) {
+    var box = wrapperFor(field);
+    return box ? Array.prototype.slice.call(box.querySelectorAll('input[type="radio"]')) : [field];
+  }
+
+  // The message slot for a field, given an id on first use (names repeat in this
+  // form and contacts are cloned, so ids can't be fixed in the markup).
+  function slotFor(field) {
+    var box = wrapperFor(field);
+    var slot = box ? box.querySelector('.pp-field-error') : null;
+    if (slot && !slot.id) slot.id = 'pp-field-error-' + (++uid);
+    return slot;
+  }
+
+  function message(field) {
+    var validity = field.validity || {};
+    if (field.type === 'radio') {
+      if (!field.required) return '';
+      return radiosOf(field).some(function (r) { return r.checked; })
+        ? ''
+        : field.getAttribute('data-pp-error') || CHOICE_MESSAGE;
+    }
+    if (field.type === 'number' && (validity.badInput || validity.rangeUnderflow || validity.stepMismatch)) {
+      return field.getAttribute('data-pp-error-number') || NUMBER_MESSAGE;
+    }
+    // Spaces alone pass the browser's "required" check, so trim first.
+    if (field.required && !String(field.value).trim()) {
+      return field.getAttribute('data-pp-error') || 'This field is required.';
+    }
+    if (field.type === 'email' && validity.typeMismatch) return EMAIL_MESSAGE;
+    if (validity.valid === false) return field.getAttribute('data-pp-error') || field.validationMessage;
+    return '';
+  }
+
+  function show(field, text) {
+    var slot = slotFor(field);
+    var wrap = wrapperFor(field);
+    if (slot) slot.textContent = text;
+    (field.type === 'radio' ? radiosOf(field) : [field]).forEach(function (f) {
+      if (text) {
+        f.setAttribute('aria-invalid', 'true');
+        if (slot) f.setAttribute('aria-describedby', slot.id);
+      } else {
+        f.removeAttribute('aria-invalid');
+        f.removeAttribute('aria-describedby');
+      }
+    });
+    if (wrap) wrap.classList.toggle('is-invalid', !!text);
+  }
+
+  /** Check every field the browser would validate in container; true when all pass. */
+  function validate(container) {
+    var firstInvalid = null;
+    var seenGroups = [];
+    Array.prototype.slice.call(container.querySelectorAll('input, select, textarea')).forEach(function (field) {
+      // willValidate is false for disabled, read-only and hidden fields, as before.
+      if (!field.willValidate || field.offsetParent === null) return;
+      if (field.type === 'radio') {
+        var box = wrapperFor(field);
+        if (seenGroups.indexOf(box) !== -1) return;
+        seenGroups.push(box);
+      }
+      var text = message(field);
+      show(field, text);
+      if (text && !firstInvalid) firstInvalid = field;
+    });
+    if (firstInvalid) firstInvalid.focus();
+    return !firstInvalid;
+  }
+
+  /** input/change listener: re-check a field once it has been flagged. */
+  function recheck(event) {
+    var field = event.target;
+    if (!field || !field.getAttribute) return;
+    var flagged = field.type === 'radio'
+      ? radiosOf(field).some(function (r) { return r.getAttribute('aria-invalid') === 'true'; })
+      : field.getAttribute('aria-invalid') === 'true';
+    if (flagged) show(field, message(field));
+  }
+
+  /** Re-check flagged fields whose value changed without an event (e.g. filled in by code). */
+  function refresh(container) {
+    Array.prototype.slice.call(container.querySelectorAll('[aria-invalid="true"]')).forEach(function (field) {
+      show(field, message(field));
+    });
+  }
+
+  /** Remove all error state, e.g. from a cloned block or a section that was hidden. */
+  function clear(container) {
+    Array.prototype.slice.call(container.querySelectorAll('.pp-field-error')).forEach(function (slot) {
+      slot.textContent = '';
+    });
+    Array.prototype.slice.call(container.querySelectorAll('[aria-invalid]')).forEach(function (f) {
+      f.removeAttribute('aria-invalid');
+      f.removeAttribute('aria-describedby');
+    });
+    Array.prototype.slice.call(container.querySelectorAll('.is-invalid')).forEach(function (w) {
+      w.classList.remove('is-invalid');
+    });
+  }
+
+  return { validate: validate, recheck: recheck, refresh: refresh, clear: clear };
+})();
+
 (function () {
   var root = document.querySelector('[data-pp-form-v2]');
   if (!root || typeof ppFormV2 === 'undefined') return;
@@ -36,6 +162,8 @@
       else if (previousBilling !== null) input.value = previousBilling[name];
     });
     if (!billingCopy.checked) previousBilling = null;
+    // The values above changed without input events: let flagged billing fields clear.
+    ppFieldErrors.refresh(form);
   }
 
   function formatPhone(input) {
@@ -116,6 +244,8 @@
       section.querySelectorAll('input, select, textarea').forEach(function (input) {
         input.disabled = !isVisible;
       });
+      // A hidden section is never checked, so it must not reappear still showing old errors.
+      if (!isVisible) ppFieldErrors.clear(section);
     });
   }
 
@@ -147,7 +277,7 @@
     if (prevBtn) prevBtn.style.display = step === 1 || step === 4 ? 'none' : '';
     if (nextBtn) {
       nextBtn.style.display = step === 4 ? 'none' : '';
-      nextBtn.textContent = step === 3 ? 'Submit Info' : 'Continue';
+      nextBtn.textContent = step === 3 ? 'Submit order details' : 'Continue';
     }
 
     showNotice('', 'info');
@@ -166,18 +296,7 @@
 
   function validateStep() {
     var panel = activePanel();
-    if (!panel) return true;
-
-    var fields = Array.prototype.slice.call(panel.querySelectorAll('input, select, textarea'));
-    for (var i = 0; i < fields.length; i++) {
-      var field = fields[i];
-      if (field.disabled || field.offsetParent === null) continue;
-      if (!field.checkValidity()) {
-        field.reportValidity();
-        return false;
-      }
-    }
-    return true;
+    return panel ? ppFieldErrors.validate(panel) : true;
   }
 
   function submitStep(step, silent) {
@@ -214,7 +333,7 @@
       .finally(function () {
         if (!silent) {
           nextBtn.disabled = false;
-          nextBtn.textContent = step === 3 ? 'Submit Info' : 'Continue';
+          nextBtn.textContent = step === 3 ? 'Submit order details' : 'Continue';
         }
       });
   }
@@ -233,6 +352,9 @@
     clone.querySelectorAll('[name^="hoa_on_board"]').forEach(function (field) {
       field.name = 'hoa_on_board[' + index + ']';
     });
+    // A new contact starts clean: no copied messages, and its slots get their own ids.
+    ppFieldErrors.clear(clone);
+    clone.querySelectorAll('.pp-field-error').forEach(function (slot) { slot.removeAttribute('id'); });
     list.appendChild(clone);
   }
 
@@ -246,6 +368,8 @@
   });
   root.addEventListener('keyup', formatPhoneEvent);
   root.addEventListener('focusout', formatPhoneEvent);
+  root.addEventListener('input', ppFieldErrors.recheck);
+  root.addEventListener('change', ppFieldErrors.recheck);
 
   var addHoaBtn = root.querySelector('[data-pp-add-hoa]');
   if (addHoaBtn) {
@@ -416,66 +540,13 @@
     return root.querySelector('[data-pp-quote-step="' + currentStep + '"]');
   }
 
-  /* Field errors are shown in the page, never as browser pop-ups: the message goes in
-     the field's <span class="pp-field-error" id="{field id}-error">, the field gets
-     aria-invalid + aria-describedby, and its .pp-field wrapper gets .is-invalid.
-     Messages come from each field's data-pp-error attribute (set in PHP). */
-  var NUMBER_MESSAGE = 'Please enter a whole number of 1 or more.';
-
-  function fieldMessage(field) {
-    var validity = field.validity || {};
-    if (field.type === 'number' && (validity.badInput || validity.rangeUnderflow || validity.stepMismatch)) {
-      return NUMBER_MESSAGE;
-    }
-    // Spaces alone pass the browser's "required" check, so trim first.
-    if (field.required && !String(field.value).trim()) {
-      return field.getAttribute('data-pp-error') || 'This field is required.';
-    }
-    if (validity.valid === false) {
-      return field.getAttribute('data-pp-error') || field.validationMessage;
-    }
-    return '';
-  }
-
-  function showFieldError(field, text) {
-    var slot = field.id ? document.getElementById(field.id + '-error') : null;
-    var wrap = field.closest('.pp-field');
-    if (slot) slot.textContent = text;
-    if (text) {
-      field.setAttribute('aria-invalid', 'true');
-      if (slot) field.setAttribute('aria-describedby', slot.id);
-    } else {
-      field.removeAttribute('aria-invalid');
-      field.removeAttribute('aria-describedby');
-    }
-    if (wrap) wrap.classList.toggle('is-invalid', !!text);
-  }
-
+  // In-page field errors: see ppFieldErrors at the top of this file.
   function validateStep() {
     var panel = activePanel();
-    if (!panel) return true;
-
-    var firstInvalid = null;
-    Array.prototype.slice.call(panel.querySelectorAll('input, select, textarea')).forEach(function (field) {
-      if (field.disabled || field.type === 'hidden' || field.offsetParent === null) return;
-      var text = fieldMessage(field);
-      showFieldError(field, text);
-      if (text && !firstInvalid) firstInvalid = field;
-    });
-    if (firstInvalid) firstInvalid.focus();
-    return !firstInvalid;
+    return panel ? ppFieldErrors.validate(panel) : true;
   }
-
-  // Once a field is flagged, re-check it as it changes: the message clears the moment
-  // it is fixed. Fields not yet flagged stay quiet while the visitor is still typing.
-  function recheckField(event) {
-    var field = event.target;
-    if (field && field.getAttribute && field.getAttribute('aria-invalid') === 'true') {
-      showFieldError(field, fieldMessage(field));
-    }
-  }
-  form.addEventListener('input', recheckField);
-  form.addEventListener('change', recheckField);
+  form.addEventListener('input', ppFieldErrors.recheck);
+  form.addEventListener('change', ppFieldErrors.recheck);
 
   // Saving states change only the .btn-label text, so any icon in the button stays.
   function setButtonLabel(button, text) {

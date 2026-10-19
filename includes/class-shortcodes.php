@@ -529,9 +529,9 @@ class Shortcodes {
         ?>
         <div class="pp-form-v2" data-pp-form-v2 data-pp-property-type="<?php echo esc_attr( $property_type ); ?>">
             <ol class="pp-form-v2__steps" aria-label="<?php esc_attr_e( 'Order form progress', 'pooprints-calculator' ); ?>">
-                <li class="is-active" data-pp-step-dot="1"><span>1</span> Property &amp; Shipping</li>
-                <li data-pp-step-dot="2"><span>2</span> Billing &amp; Contact</li>
-                <li data-pp-step-dot="3"><span>3</span> Organization &amp; Submit</li>
+                <li class="is-active" data-pp-step-dot="1"><span>1</span> Property &amp; shipping</li>
+                <li data-pp-step-dot="2"><span>2</span> Billing &amp; contact</li>
+                <li data-pp-step-dot="3"><span>3</span> Organization &amp; submit</li>
                 <li data-pp-step-dot="4"><span>4</span> Confirmation</li>
             </ol>
 
@@ -540,290 +540,349 @@ class Shortcodes {
                     <?php wp_nonce_field( 'pooprints_form_v2', 'pooprints_form_v2_nonce' ); ?>
 
                     <section class="pp-form-v2__panel is-active" data-pp-step="1">
-                        <h2>Property Information</h2>
+                        <h2>Property information</h2>
                         <div class="pp-form-v2__grid">
-                            <label class="pp-field pp-field--full">Property Name *
-                                <input name="Company" type="text" value="<?php echo esc_attr( $values['Company'] ); ?>" placeholder="Enter property name" required>
+                            <label class="pp-field pp-field--full">Property name *
+                                <input name="Company" type="text" value="<?php echo esc_attr( $values['Company'] ); ?>" placeholder="Enter property name" autocomplete="organization" data-pp-error="Please enter the property name." required>
+                                <span class="pp-field-error" aria-hidden="true"></span>
                             </label>
-                            <label class="pp-field pp-field--span-8">Property Mailing Address *
-                                <input name="Address3Street1" type="text" value="<?php echo esc_attr( $values['Address3Street1'] ); ?>" placeholder="Enter U.S. Postal (USPS) address" required>
+                            <label class="pp-field pp-field--span-8">Property mailing address *
+                                <input name="Address3Street1" type="text" value="<?php echo esc_attr( $values['Address3Street1'] ); ?>" placeholder="Enter U.S. Postal (USPS) address" autocomplete="section-property address-line1" data-pp-error="Please enter the property mailing address." required>
+                                <span class="pp-field-error" aria-hidden="true"></span>
                             </label>
-                            <label class="pp-field pp-field--span-4">Unit or Suite # or Leasing Office
-                                <input name="Address3Street2" type="text" value="<?php echo esc_attr( $values['Address3Street2'] ); ?>" placeholder="Unit # or leasing office">
+                            <label class="pp-field pp-field--span-4">Unit or suite # or leasing office
+                                <input name="Address3Street2" type="text" value="<?php echo esc_attr( $values['Address3Street2'] ); ?>" placeholder="Unit # or leasing office" autocomplete="section-property address-line2">
                             </label>
                             <label class="pp-field pp-field--span-6">City *
-                                <input name="City3" type="text" value="<?php echo esc_attr( $values['City3'] ); ?>" placeholder="Enter city" required>
+                                <input name="City3" type="text" value="<?php echo esc_attr( $values['City3'] ); ?>" placeholder="Enter city" autocomplete="section-property address-level2" data-pp-error="Please enter the city." required>
+                                <span class="pp-field-error" aria-hidden="true"></span>
                             </label>
                             <label class="pp-field pp-field--span-3">State *
-                                <input name="State3" type="text" value="<?php echo esc_attr( $values['State3'] ); ?>" placeholder="State" required>
+                                <input name="State3" type="text" value="<?php echo esc_attr( $values['State3'] ); ?>" placeholder="State" autocomplete="section-property address-level1" maxlength="2" data-pp-error="Please enter the state." required>
+                                <span class="pp-field-error" aria-hidden="true"></span>
                             </label>
-                            <label class="pp-field pp-field--span-3">Zip Code *
-                                <input name="PostalCode3" type="text" value="<?php echo esc_attr( $values['PostalCode3'] ); ?>" placeholder="Zip code" required>
+                            <label class="pp-field pp-field--span-3">Postal code *
+                                <input name="PostalCode3" type="text" value="<?php echo esc_attr( $values['PostalCode3'] ); ?>" placeholder="Zip code" autocomplete="section-property postal-code" inputmode="numeric" maxlength="10" data-pp-error="Please enter the postal code." required>
+                                <span class="pp-field-error" aria-hidden="true"></span>
                             </label>
-                            <label class="pp-field pp-field--span-6">Phone Number *
-                                <input name="Phone1" type="tel" value="<?php echo esc_attr( $values['Phone1'] ); ?>" placeholder="(000) 000-0000" required>
+                            <label class="pp-field pp-field--span-6">Phone number *
+                                <input name="Phone1" type="tel" value="<?php echo esc_attr( $values['Phone1'] ); ?>" placeholder="(000) 000-0000" autocomplete="tel" data-pp-error="Please enter the phone number." required>
+                                <span class="pp-field-error" aria-hidden="true"></span>
                             </label>
-                            <label class="pp-field pp-field--span-6">Total Number of Units *
-                                <input name="_ofUnits" type="number" min="0" value="<?php echo esc_attr( $values['_ofUnits'] ); ?>" placeholder="Enter number of units" required>
+                            <label class="pp-field pp-field--span-6">Total number of units *
+                                <input name="_ofUnits" type="number" min="0" value="<?php echo esc_attr( $values['_ofUnits'] ); ?>" placeholder="Enter number of units" inputmode="numeric" data-pp-error-number="Please enter a whole number." data-pp-error="Please enter the total number of units." required>
+                                <span class="pp-field-error" aria-hidden="true"></span>
                             </label>
                         </div>
 
-                        <h3>Shipping Details</h3>
+                        <h3>Shipping details</h3>
                         <fieldset class="pp-choice">
                             <legend>Is the property's address the shipping address? *</legend>
-                            <label><input type="radio" name="shipping_same" value="yes" required> Yes</label>
-                            <label><input type="radio" name="shipping_same" value="no" required> No</label>
+                            <label><input type="radio" name="shipping_same" value="yes" data-pp-error="Please choose Yes or No." required> Yes</label>
+                            <label><input type="radio" name="shipping_same" value="no" data-pp-error="Please choose Yes or No." required> No</label>
+                            <span class="pp-field-error" aria-hidden="true"></span>
                         </fieldset>
                         <div class="pp-form-v2__conditional" data-pp-show-if="shipping_same:no">
                             <div class="pp-form-v2__grid">
-                                <label class="pp-field pp-field--full">Shipping Property or Company Name *
-                                    <input name="shipping_name" type="text" placeholder="Property or company name" required>
+                                <label class="pp-field pp-field--full">Shipping property or company name *
+                                    <input name="shipping_name" type="text" placeholder="Property or company name" data-pp-error="Please enter the shipping property or company name." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
-                                <label class="pp-field pp-field--full">Shipping Address Line 1 *
-                                    <input name="shipping_address1" type="text" value="<?php echo esc_attr( $values['StreetAddress1'] ); ?>" placeholder="Address line 1" required>
+                                <label class="pp-field pp-field--full">Shipping address line 1 *
+                                    <input name="shipping_address1" type="text" value="<?php echo esc_attr( $values['StreetAddress1'] ); ?>" placeholder="Address line 1" autocomplete="shipping address-line1" data-pp-error="Please enter the shipping address." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
-                                <label class="pp-field pp-field--full">Shipping Address Line 2
-                                    <input name="shipping_address2" type="text" value="<?php echo esc_attr( $values['StreetAddress2'] ); ?>" placeholder="Address line 2">
+                                <label class="pp-field pp-field--full">Shipping address line 2
+                                    <input name="shipping_address2" type="text" value="<?php echo esc_attr( $values['StreetAddress2'] ); ?>" placeholder="Address line 2" autocomplete="shipping address-line2">
                                 </label>
                                 <label class="pp-field pp-field--span-6">City *
-                                    <input name="shipping_city" type="text" value="<?php echo esc_attr( $values['City'] ); ?>" placeholder="Enter city" required>
+                                    <input name="shipping_city" type="text" value="<?php echo esc_attr( $values['City'] ); ?>" placeholder="Enter city" autocomplete="shipping address-level2" data-pp-error="Please enter the city." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
                                 <label class="pp-field pp-field--span-3">State *
-                                    <input name="shipping_state" type="text" value="<?php echo esc_attr( $values['State'] ); ?>" placeholder="State" required>
+                                    <input name="shipping_state" type="text" value="<?php echo esc_attr( $values['State'] ); ?>" placeholder="State" autocomplete="shipping address-level1" maxlength="2" data-pp-error="Please enter the state." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
-                                <label class="pp-field pp-field--span-3">Zip Code *
-                                    <input name="shipping_zip" type="text" value="<?php echo esc_attr( $values['PostalCode'] ); ?>" placeholder="Zip code" required>
+                                <label class="pp-field pp-field--span-3">Postal code *
+                                    <input name="shipping_zip" type="text" value="<?php echo esc_attr( $values['PostalCode'] ); ?>" placeholder="Zip code" autocomplete="shipping postal-code" inputmode="numeric" maxlength="10" data-pp-error="Please enter the postal code." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
                             </div>
                         </div>
 
                         <fieldset class="pp-choice">
                             <legend data-pp-usps-question>Can your property address receive USPS packages? *</legend>
-                            <label><input type="radio" name="usps_receive" value="yes" required> Yes</label>
-                            <label><input type="radio" name="usps_receive" value="no" required> No</label>
+                            <label><input type="radio" name="usps_receive" value="yes" data-pp-error="Please choose Yes or No." required> Yes</label>
+                            <label><input type="radio" name="usps_receive" value="no" data-pp-error="Please choose Yes or No." required> No</label>
+                            <span class="pp-field-error" aria-hidden="true"></span>
                         </fieldset>
                         <div class="pp-form-v2__conditional" data-pp-show-if="usps_receive:no">
-                            <h3>Temporary Shipping Address</h3>
+                            <h3>Temporary shipping address</h3>
                             <div class="pp-form-v2__grid">
-                                <label class="pp-field pp-field--full">Property or Company Name *
-                                    <input name="temp_shipping_name" type="text" placeholder="Property or company name" required>
+                                <label class="pp-field pp-field--full">Property or company name *
+                                    <input name="temp_shipping_name" type="text" placeholder="Property or company name" data-pp-error="Please enter the property or company name." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
-                                <label class="pp-field pp-field--full">Address Line 1 *
-                                    <input name="temp_shipping_address1" type="text" placeholder="Address line 1" required>
+                                <label class="pp-field pp-field--full">Address line 1 *
+                                    <input name="temp_shipping_address1" type="text" placeholder="Address line 1" autocomplete="section-temp address-line1" data-pp-error="Please enter the address." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
-                                <label class="pp-field pp-field--full">Address Line 2
-                                    <input name="temp_shipping_address2" type="text" placeholder="Address line 2">
+                                <label class="pp-field pp-field--full">Address line 2
+                                    <input name="temp_shipping_address2" type="text" placeholder="Address line 2" autocomplete="section-temp address-line2">
                                 </label>
                                 <label class="pp-field pp-field--span-6">City *
-                                    <input name="temp_shipping_city" type="text" placeholder="Enter city" required>
+                                    <input name="temp_shipping_city" type="text" placeholder="Enter city" autocomplete="section-temp address-level2" data-pp-error="Please enter the city." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
                                 <label class="pp-field pp-field--span-3">State *
-                                    <input name="temp_shipping_state" type="text" placeholder="State" required>
+                                    <input name="temp_shipping_state" type="text" placeholder="State" autocomplete="section-temp address-level1" maxlength="2" data-pp-error="Please enter the state." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
-                                <label class="pp-field pp-field--span-3">Zip Code *
-                                    <input name="temp_shipping_zip" type="text" placeholder="Zip code" required>
+                                <label class="pp-field pp-field--span-3">Postal code *
+                                    <input name="temp_shipping_zip" type="text" placeholder="Zip code" autocomplete="section-temp postal-code" inputmode="numeric" maxlength="10" data-pp-error="Please enter the postal code." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
                             </div>
                         </div>
 
                         <fieldset class="pp-choice">
                             <legend>Do you want us to delay the shipment? *</legend>
-                            <label><input type="radio" name="delay_shipping" value="yes" required> Yes</label>
-                            <label><input type="radio" name="delay_shipping" value="no" required> No</label>
+                            <label><input type="radio" name="delay_shipping" value="yes" data-pp-error="Please choose Yes or No." required> Yes</label>
+                            <label><input type="radio" name="delay_shipping" value="no" data-pp-error="Please choose Yes or No." required> No</label>
+                            <span class="pp-field-error" aria-hidden="true"></span>
                         </fieldset>
                         <div class="pp-form-v2__conditional" data-pp-show-if="delay_shipping:yes">
                             <label class="pp-field pp-field--date">If yes, what date do you want the shipment to arrive? *
-                                <input name="delay_date" type="date" required>
+                                <input name="delay_date" type="date" data-pp-error="Please choose a delivery date." required>
+                                <span class="pp-field-error" aria-hidden="true"></span>
                             </label>
                         </div>
                     </section>
 
                     <section class="pp-form-v2__panel" data-pp-step="2">
                         <div class="pp-form-v2__billing-heading">
-                            <h2>Billing Address for Property</h2>
+                            <h2>Billing address for property</h2>
                             <label class="pp-form-v2__billing-copy"><input type="checkbox" name="billing_same_as_property" value="yes"> Use property address as billing address</label>
                         </div>
                         <div class="pp-form-v2__grid">
-                            <label class="pp-field pp-field--full">Company Name
+                            <label class="pp-field pp-field--full">Company name
                                 <input name="billing_company" type="text" placeholder="Enter company name if different than the property name.">
                             </label>
-                            <label class="pp-field pp-field--span-8">Billing Mailing Address *
-                                <input name="billing_address1" type="text" value="<?php echo esc_attr( $values['billing_address1'] ); ?>" placeholder="Enter U.S. Postal (USPS) address" required>
+                            <label class="pp-field pp-field--span-8">Billing mailing address *
+                                <input name="billing_address1" type="text" value="<?php echo esc_attr( $values['billing_address1'] ); ?>" placeholder="Enter U.S. Postal (USPS) address" autocomplete="billing address-line1" data-pp-error="Please enter the billing mailing address." required>
+                                <span class="pp-field-error" aria-hidden="true"></span>
                             </label>
-                            <label class="pp-field pp-field--span-4">Unit or Suite # or Leasing Office
-                                <input name="billing_address2" type="text" value="<?php echo esc_attr( $values['billing_address2'] ); ?>" placeholder="Unit # or leasing office">
+                            <label class="pp-field pp-field--span-4">Unit or suite # or leasing office
+                                <input name="billing_address2" type="text" value="<?php echo esc_attr( $values['billing_address2'] ); ?>" placeholder="Unit # or leasing office" autocomplete="billing address-line2">
                             </label>
                             <label class="pp-field pp-field--span-6">City *
-                                <input name="billing_city" type="text" value="<?php echo esc_attr( $values['billing_city'] ); ?>" placeholder="Enter city" required>
+                                <input name="billing_city" type="text" value="<?php echo esc_attr( $values['billing_city'] ); ?>" placeholder="Enter city" autocomplete="billing address-level2" data-pp-error="Please enter the city." required>
+                                <span class="pp-field-error" aria-hidden="true"></span>
                             </label>
                             <label class="pp-field pp-field--span-3">State *
-                                <input name="billing_state" type="text" value="<?php echo esc_attr( $values['billing_state'] ); ?>" placeholder="State" required>
+                                <input name="billing_state" type="text" value="<?php echo esc_attr( $values['billing_state'] ); ?>" placeholder="State" autocomplete="billing address-level1" maxlength="2" data-pp-error="Please enter the state." required>
+                                <span class="pp-field-error" aria-hidden="true"></span>
                             </label>
-                            <label class="pp-field pp-field--span-3">Zip Code *
-                                <input name="billing_zip" type="text" value="<?php echo esc_attr( $values['billing_zip'] ); ?>" placeholder="Zip code" required>
+                            <label class="pp-field pp-field--span-3">Postal code *
+                                <input name="billing_zip" type="text" value="<?php echo esc_attr( $values['billing_zip'] ); ?>" placeholder="Zip code" autocomplete="billing postal-code" inputmode="numeric" maxlength="10" data-pp-error="Please enter the postal code." required>
+                                <span class="pp-field-error" aria-hidden="true"></span>
                             </label>
                         </div>
 
-                        <h2 class="pp-form-v2__section-title">Primary PooPrints Contact</h2>
+                        <h2 class="pp-form-v2__section-title">Primary PooPrints contact</h2>
                         <p class="pp-form-v2__hint">Who will be primarily handling PooPrints at your community?</p>
                         <div class="pp-form-v2__grid">
-                            <label class="pp-field pp-field--span-6">First Name *
-                                <input name="primary_first_name" type="text" placeholder="Enter first name" required>
+                            <label class="pp-field pp-field--span-6">First name *
+                                <input name="primary_first_name" type="text" placeholder="Enter first name" autocomplete="given-name" data-pp-error="Please enter the first name." required>
+                                <span class="pp-field-error" aria-hidden="true"></span>
                             </label>
-                            <label class="pp-field pp-field--span-6">Last Name *
-                                <input name="primary_last_name" type="text" placeholder="Enter last name" required>
+                            <label class="pp-field pp-field--span-6">Last name *
+                                <input name="primary_last_name" type="text" placeholder="Enter last name" autocomplete="family-name" data-pp-error="Please enter the last name." required>
+                                <span class="pp-field-error" aria-hidden="true"></span>
                             </label>
-                            <label class="pp-field pp-field--span-6">Email Address *
-                                <input name="primary_email" type="email" placeholder="email@example.com" required>
+                            <label class="pp-field pp-field--span-6">Email address *
+                                <input name="primary_email" type="email" placeholder="email@example.com" autocomplete="email" data-pp-error="Please enter the email address." required>
+                                <span class="pp-field-error" aria-hidden="true"></span>
                             </label>
-                            <label class="pp-field pp-field--span-6">Job Title *
-                                <input name="primary_job_title" type="text" placeholder="e.g. Property Manager" required>
+                            <label class="pp-field pp-field--span-6">Job title *
+                                <input name="primary_job_title" type="text" placeholder="e.g. Property Manager" autocomplete="organization-title" data-pp-error="Please enter the job title." required>
+                                <span class="pp-field-error" aria-hidden="true"></span>
                             </label>
                         </div>
 
-                        <h2 class="pp-form-v2__section-title">Billing &amp; Invoicing</h2>
-                        <label class="pp-field pp-field--medium">Accounts Payable Email Address for Invoices *
-                            <input name="ap_email" type="email" value="<?php echo esc_attr( $values['ap_email'] ); ?>" placeholder="email@example.com" required>
+                        <h2 class="pp-form-v2__section-title">Billing &amp; invoicing</h2>
+                        <label class="pp-field pp-field--medium">Accounts payable email address for invoices *
+                            <input name="ap_email" type="email" value="<?php echo esc_attr( $values['ap_email'] ); ?>" placeholder="email@example.com" autocomplete="off" data-pp-error="Please enter the accounts payable email address." required>
+                            <span class="pp-field-error" aria-hidden="true"></span>
                         </label>
                         <fieldset class="pp-choice">
                             <legend>Do you currently use PetScreening? *</legend>
-                            <label><input type="radio" name="petscreening" value="yes" <?php checked( $petscreening_value, 'yes' ); ?> required> Yes</label>
-                            <label><input type="radio" name="petscreening" value="no" <?php checked( $petscreening_value, 'no' ); ?> required> No</label>
+                            <label><input type="radio" name="petscreening" value="yes" <?php checked( $petscreening_value, 'yes' ); ?> data-pp-error="Please choose Yes or No." required> Yes</label>
+                            <label><input type="radio" name="petscreening" value="no" <?php checked( $petscreening_value, 'no' ); ?> data-pp-error="Please choose Yes or No." required> No</label>
+                            <span class="pp-field-error" aria-hidden="true"></span>
                         </fieldset>
                         <label class="pp-field pp-field--medium">What property management system software do you use? *
-                            <select name="_PropertyManagementSoftwareUsed" required>
+                            <select name="_PropertyManagementSoftwareUsed" data-pp-error="Please choose your property management software." required>
                                 <option value="">Select your property management software</option>
                                 <?php foreach ( $software_options as $option ) : ?>
                                     <option value="<?php echo esc_attr( $option ); ?>" <?php selected( $values['_PropertyManagementSoftwareUsed'], $option ); ?>><?php echo esc_html( $option ); ?></option>
                                 <?php endforeach; ?>
                             </select>
+                            <span class="pp-field-error" aria-hidden="true"></span>
                         </label>
                         <div class="pp-form-v2__conditional" data-pp-show-if="_PropertyManagementSoftwareUsed:Other">
-                            <label class="pp-field pp-field--medium">Software Name
+                            <label class="pp-field pp-field--medium">Software name
                                 <input name="software_other" type="text" placeholder="Enter software name">
                             </label>
                         </div>
                     </section>
 
                     <section class="pp-form-v2__panel" data-pp-step="3">
-                        <h2>Organization &amp; Submit</h2>
+                        <h2>Organization &amp; submit</h2>
                         <fieldset class="pp-choice">
                             <legend>Is there a management company? *</legend>
-                            <label><input type="radio" name="has_management_company" value="yes" required> Yes</label>
-                            <label><input type="radio" name="has_management_company" value="no" required> No (Self managed)</label>
+                            <label><input type="radio" name="has_management_company" value="yes" data-pp-error="Please choose Yes or No." required> Yes</label>
+                            <label><input type="radio" name="has_management_company" value="no" data-pp-error="Please choose Yes or No." required> No (Self managed)</label>
+                            <span class="pp-field-error" aria-hidden="true"></span>
                         </fieldset>
 
                         <div class="pp-form-v2__conditional" data-pp-show-if="has_management_company:yes">
-                            <h3>Management Company</h3>
+                            <h3>Management company</h3>
                             <div class="pp-form-v2__grid">
-                                <label class="pp-field pp-field--full">Management Company Name *
-                                    <input name="management_company_name" type="text" placeholder="Enter management company name" required>
+                                <label class="pp-field pp-field--full">Management company name *
+                                    <input name="management_company_name" type="text" placeholder="Enter management company name" data-pp-error="Please enter the management company name." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
-                                <label class="pp-field pp-field--span-8">USPS Address *
-                                    <input name="management_address1" type="text" placeholder="Enter U.S. Postal (USPS) address" required>
+                                <label class="pp-field pp-field--span-8">USPS address *
+                                    <input name="management_address1" type="text" placeholder="Enter U.S. Postal (USPS) address" autocomplete="section-management address-line1" data-pp-error="Please enter the USPS address." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
-                                <label class="pp-field pp-field--span-4">Unit or Suite #
-                                    <input name="management_address2" type="text" placeholder="Unit or Suite #">
+                                <label class="pp-field pp-field--span-4">Unit or suite #
+                                    <input name="management_address2" type="text" placeholder="Unit or Suite #" autocomplete="section-management address-line2">
                                 </label>
                                 <label class="pp-field pp-field--span-6">City *
-                                    <input name="management_city" type="text" placeholder="Enter city" required>
+                                    <input name="management_city" type="text" placeholder="Enter city" autocomplete="section-management address-level2" data-pp-error="Please enter the city." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
                                 <label class="pp-field pp-field--span-3">State *
-                                    <input name="management_state" type="text" placeholder="State" required>
+                                    <input name="management_state" type="text" placeholder="State" autocomplete="section-management address-level1" maxlength="2" data-pp-error="Please enter the state." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
-                                <label class="pp-field pp-field--span-3">Zip Code *
-                                    <input name="management_zip" type="text" placeholder="Zip code" required>
-                                </label>
-                            </div>
-                            <h3>Person Who Manages this Community</h3>
-                            <div class="pp-form-v2__grid">
-                                <label class="pp-field pp-field--span-6">First Name *
-                                    <input name="community_manager_first_name" type="text" placeholder="First name" required>
-                                </label>
-                                <label class="pp-field pp-field--span-6">Last Name *
-                                    <input name="community_manager_last_name" type="text" placeholder="Last name" required>
-                                </label>
-                                <label class="pp-field pp-field--span-6">Email *
-                                    <input name="community_manager_email" type="email" placeholder="email@example.com" required>
-                                </label>
-                                <label class="pp-field pp-field--span-6">Job Title *
-                                    <input name="community_manager_job_title" type="text" placeholder="e.g. Community Manager" required>
+                                <label class="pp-field pp-field--span-3">Postal code *
+                                    <input name="management_zip" type="text" placeholder="Zip code" autocomplete="section-management postal-code" inputmode="numeric" maxlength="10" data-pp-error="Please enter the postal code." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
                             </div>
-                            <h3>Person Who Manages Community Reports to This Person</h3>
+                            <h3>Person who manages this community</h3>
                             <div class="pp-form-v2__grid">
-                                <label class="pp-field pp-field--span-6">First Name *
-                                    <input name="regional_manager_first_name" type="text" placeholder="First name" required>
+                                <label class="pp-field pp-field--span-6">First name *
+                                    <input name="community_manager_first_name" type="text" placeholder="First name" autocomplete="off" data-pp-error="Please enter the first name." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
-                                <label class="pp-field pp-field--span-6">Last Name *
-                                    <input name="regional_manager_last_name" type="text" placeholder="Last name" required>
+                                <label class="pp-field pp-field--span-6">Last name *
+                                    <input name="community_manager_last_name" type="text" placeholder="Last name" autocomplete="off" data-pp-error="Please enter the last name." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
                                 <label class="pp-field pp-field--span-6">Email *
-                                    <input name="regional_manager_email" type="email" placeholder="email@example.com" required>
+                                    <input name="community_manager_email" type="email" placeholder="email@example.com" autocomplete="off" data-pp-error="Please enter the email address." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
-                                <label class="pp-field pp-field--span-6">Job Title *
-                                    <input name="regional_manager_job_title" type="text" placeholder="e.g. Regional Manager" required>
+                                <label class="pp-field pp-field--span-6">Job title *
+                                    <input name="community_manager_job_title" type="text" placeholder="e.g. Community Manager" autocomplete="off" data-pp-error="Please enter the job title." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
+                                </label>
+                            </div>
+                            <h3>Person who manages community reports to this person</h3>
+                            <div class="pp-form-v2__grid">
+                                <label class="pp-field pp-field--span-6">First name *
+                                    <input name="regional_manager_first_name" type="text" placeholder="First name" autocomplete="off" data-pp-error="Please enter the first name." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
+                                </label>
+                                <label class="pp-field pp-field--span-6">Last name *
+                                    <input name="regional_manager_last_name" type="text" placeholder="Last name" autocomplete="off" data-pp-error="Please enter the last name." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
+                                </label>
+                                <label class="pp-field pp-field--span-6">Email *
+                                    <input name="regional_manager_email" type="email" placeholder="email@example.com" autocomplete="off" data-pp-error="Please enter the email address." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
+                                </label>
+                                <label class="pp-field pp-field--span-6">Job title *
+                                    <input name="regional_manager_job_title" type="text" placeholder="e.g. Regional Manager" autocomplete="off" data-pp-error="Please enter the job title." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
                             </div>
                         </div>
 
                         <div class="pp-form-v2__conditional" data-pp-step3-branch="rental">
-                        <h3>Person Who Manages this Community</h3>
+                        <h3>Person who manages this community</h3>
                             <div class="pp-form-v2__grid">
-                                <label class="pp-field pp-field--span-6">First Name *
-                                    <input name="community_manager_first_name" type="text" placeholder="First name" required>
+                                <label class="pp-field pp-field--span-6">First name *
+                                    <input name="community_manager_first_name" type="text" placeholder="First name" autocomplete="off" data-pp-error="Please enter the first name." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
-                                <label class="pp-field pp-field--span-6">Last Name *
-                                    <input name="community_manager_last_name" type="text" placeholder="Last name" required>
+                                <label class="pp-field pp-field--span-6">Last name *
+                                    <input name="community_manager_last_name" type="text" placeholder="Last name" autocomplete="off" data-pp-error="Please enter the last name." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
                                 <label class="pp-field pp-field--span-6">Email *
-                                    <input name="community_manager_email" type="email" placeholder="email@example.com" required>
+                                    <input name="community_manager_email" type="email" placeholder="email@example.com" autocomplete="off" data-pp-error="Please enter the email address." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
-                                <label class="pp-field pp-field--span-6">Job Title *
-                                    <input name="community_manager_job_title" type="text" placeholder="e.g. Community Manager" required>
+                                <label class="pp-field pp-field--span-6">Job title *
+                                    <input name="community_manager_job_title" type="text" placeholder="e.g. Community Manager" autocomplete="off" data-pp-error="Please enter the job title." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
                             </div>
                             
-                            <h3>Property Owner Representative</h3>
+                            <h3>Property owner representative</h3>
                             <div class="pp-form-v2__grid">
-                                <label class="pp-field pp-field--span-6">First Name *
-                                    <input name="owner_first_name" type="text" placeholder="First name" required>
+                                <label class="pp-field pp-field--span-6">First name *
+                                    <input name="owner_first_name" type="text" placeholder="First name" autocomplete="off" data-pp-error="Please enter the first name." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
-                                <label class="pp-field pp-field--span-6">Last Name *
-                                    <input name="owner_last_name" type="text" placeholder="Last name" required>
+                                <label class="pp-field pp-field--span-6">Last name *
+                                    <input name="owner_last_name" type="text" placeholder="Last name" autocomplete="off" data-pp-error="Please enter the last name." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
                                 <label class="pp-field pp-field--span-6">Email *
-                                    <input name="owner_email" type="email" placeholder="email@example.com" required>
+                                    <input name="owner_email" type="email" placeholder="email@example.com" autocomplete="off" data-pp-error="Please enter the email address." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
-                                <label class="pp-field pp-field--span-6">Phone Number *
-                                    <input name="owner_phone" type="tel" placeholder="(555) 555-5555" required>
+                                <label class="pp-field pp-field--span-6">Phone number *
+                                    <input name="owner_phone" type="tel" placeholder="(555) 555-5555" autocomplete="off" data-pp-error="Please enter the phone number." required>
+                                    <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
-                                <label class="pp-field pp-field--full">Company Name
-                                    <input name="owner_company_name" type="text" placeholder="If no company name, leave blank">
+                                <label class="pp-field pp-field--full">Company name
+                                    <input name="owner_company_name" type="text" placeholder="If no company name, leave blank" autocomplete="off">
                                 </label>
                             </div>
                         </div>
 
                         <div class="pp-form-v2__conditional" data-pp-step3-branch="hoa">
-                            <h3>Community Association Contacts</h3>
+                            <h3>Community association contacts</h3>
                             <div class="pp-form-v2__repeat" data-pp-hoa-list>
                                 <div class="pp-form-v2__grid pp-form-v2__repeat-item">
-                                    <label class="pp-field pp-field--span-6">First Name *
-                                        <input name="hoa_first_name[]" type="text" placeholder="First name" required>
+                                    <label class="pp-field pp-field--span-6">First name *
+                                        <input name="hoa_first_name[]" type="text" placeholder="First name" autocomplete="off" data-pp-error="Please enter the first name." required>
+                                        <span class="pp-field-error" aria-hidden="true"></span>
                                     </label>
-                                    <label class="pp-field pp-field--span-6">Last Name *
-                                        <input name="hoa_last_name[]" type="text" placeholder="Last name" required>
+                                    <label class="pp-field pp-field--span-6">Last name *
+                                        <input name="hoa_last_name[]" type="text" placeholder="Last name" autocomplete="off" data-pp-error="Please enter the last name." required>
+                                        <span class="pp-field-error" aria-hidden="true"></span>
                                     </label>
                                     <label class="pp-field pp-field--span-6">Email *
-                                        <input name="hoa_email[]" type="email" placeholder="email@example.com" required>
+                                        <input name="hoa_email[]" type="email" placeholder="email@example.com" autocomplete="off" data-pp-error="Please enter the email address." required>
+                                        <span class="pp-field-error" aria-hidden="true"></span>
                                     </label>
-                                    <label class="pp-field pp-field--span-6">Role in the Association *
-                                        <input name="hoa_role[]" type="text" placeholder="Role in the association" required>
+                                    <label class="pp-field pp-field--span-6">Role in the association *
+                                        <input name="hoa_role[]" type="text" placeholder="Role in the association" autocomplete="off" data-pp-error="Please enter the role in the association." required>
+                                        <span class="pp-field-error" aria-hidden="true"></span>
                                     </label>
                                     <fieldset class="pp-choice pp-field--full">
                                         <legend>Is this person on the association board? *</legend>
-                                        <label><input type="radio" name="hoa_on_board[0]" value="yes" required> Yes</label>
-                                        <label><input type="radio" name="hoa_on_board[0]" value="no" required> No</label>
+                                        <label><input type="radio" name="hoa_on_board[0]" value="yes" data-pp-error="Please choose Yes or No." required> Yes</label>
+                                        <label><input type="radio" name="hoa_on_board[0]" value="no" data-pp-error="Please choose Yes or No." required> No</label>
+                                        <span class="pp-field-error" aria-hidden="true"></span>
                                     </fieldset>
                                 </div>
                             </div>
