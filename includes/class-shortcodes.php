@@ -319,71 +319,6 @@ class Shortcodes {
     }
 
     /**
-     * The first three ZIP digits USPS assigns to each state, as ranges. A ZIP must start
-     * with one of its state's prefixes. form-v2.js gets the same table through ppFormV2.
-     */
-    public static function us_zip_prefixes() {
-        return [
-            'AL' => '350-369',
-            'AK' => '995-999',
-            'AZ' => '850-865',
-            'AR' => '716-729,755',
-            'CA' => '900-961',
-            'CO' => '800-816',
-            'CT' => '060-069',
-            'DE' => '197-199',
-            'DC' => '200,202-205,569',
-            'FL' => '320-349',
-            'GA' => '300-319,398-399',
-            'HI' => '967-968',
-            'ID' => '832-838',
-            'IL' => '600-629',
-            'IN' => '460-479',
-            'IA' => '500-528',
-            'KS' => '660-679',
-            'KY' => '400-427',
-            'LA' => '700-714',
-            'ME' => '039-049',
-            'MD' => '206-219',
-            'MA' => '010-027,055',
-            'MI' => '480-499',
-            'MN' => '550-567',
-            'MS' => '386-397',
-            'MO' => '630-658',
-            'MT' => '590-599',
-            'NE' => '680-693',
-            'NV' => '889-898',
-            'NH' => '030-038',
-            'NJ' => '070-089',
-            'NM' => '870-884',
-            'NY' => '005,063,100-149',
-            'NC' => '270-289',
-            'ND' => '580-588',
-            'OH' => '430-459',
-            'OK' => '730-732,734-749',
-            'OR' => '970-979',
-            'PA' => '150-196',
-            'RI' => '028-029',
-            'SC' => '290-299',
-            'SD' => '570-577',
-            'TN' => '370-385',
-            'TX' => '733,750-799,885',
-            'UT' => '840-847',
-            'VT' => '050-054,056-059',
-            'VA' => '201,220-246',
-            'WA' => '980-994',
-            'WV' => '247-268',
-            'WI' => '530-549',
-            'WY' => '820-831,834',
-            'AS' => '967',
-            'GU' => '969',
-            'MP' => '969',
-            'PR' => '006-007,009',
-            'VI' => '008',
-        ];
-    }
-
-    /**
      * A saved state ("tx", "Texas", "TX") as its USPS code, or '' when it isn't one.
      */
     public static function us_state_code( $value ) {
@@ -398,21 +333,6 @@ class Shortcodes {
             }
         }
         return '';
-    }
-
-    /**
-     * True when the ZIP's first three digits belong to the state.
-     */
-    public static function us_zip_matches_state( $zip, $state ) {
-        $prefixes = self::us_zip_prefixes()[ $state ] ?? '';
-        $prefix   = (int) substr( (string) $zip, 0, 3 );
-        foreach ( explode( ',', $prefixes ) as $range ) {
-            $bounds = array_map( 'intval', explode( '-', $range ) );
-            if ( $prefix >= $bounds[0] && $prefix <= ( $bounds[1] ?? $bounds[0] ) ) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -497,7 +417,7 @@ class Shortcodes {
                             <?php echo self::quote_field_error( 'State' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
                         </label>
                         <label class="pp-field pp-field--span-3">Postal code *
-                            <input id="pp-qp-PostalCode" name="PostalCode" type="text" value="<?php echo esc_attr( $values['PostalCode'] ); ?>" inputmode="numeric" placeholder="ZIP" autocomplete="postal-code" maxlength="10" data-pp-zip-state="State" data-pp-error="Please enter your postal code." required>
+                            <input id="pp-qp-PostalCode" name="PostalCode" type="text" value="<?php echo esc_attr( $values['PostalCode'] ); ?>" inputmode="numeric" placeholder="ZIP" autocomplete="postal-code" maxlength="10" data-pp-zip data-pp-error="Please enter your postal code." required>
                             <?php echo self::quote_field_error( 'PostalCode' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
                         </label>
                         <label class="pp-field pp-field--full">How did you hear about us? *
@@ -770,7 +690,7 @@ class Shortcodes {
                                 <span class="pp-field-error" aria-hidden="true"></span>
                             </label>
                             <label class="pp-field pp-field--span-3">Postal code *
-                                <input name="PostalCode3" type="text" value="<?php echo esc_attr( $values['PostalCode3'] ); ?>" placeholder="Zip code" autocomplete="section-property postal-code" inputmode="numeric" maxlength="10" data-pp-zip-state="State3" data-pp-error="Please enter the postal code." required>
+                                <input name="PostalCode3" type="text" value="<?php echo esc_attr( $values['PostalCode3'] ); ?>" placeholder="Zip code" autocomplete="section-property postal-code" inputmode="numeric" maxlength="10" data-pp-zip data-pp-error="Please enter the postal code." required>
                                 <span class="pp-field-error" aria-hidden="true"></span>
                             </label>
                             <label class="pp-field pp-field--span-6">Phone number *
@@ -812,7 +732,7 @@ class Shortcodes {
                                     <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
                                 <label class="pp-field pp-field--span-3">Postal code *
-                                    <input name="shipping_zip" type="text" value="<?php echo esc_attr( $values['PostalCode'] ); ?>" placeholder="Zip code" autocomplete="shipping postal-code" inputmode="numeric" maxlength="10" data-pp-zip-state="shipping_state" data-pp-error="Please enter the postal code." required>
+                                    <input name="shipping_zip" type="text" value="<?php echo esc_attr( $values['PostalCode'] ); ?>" placeholder="Zip code" autocomplete="shipping postal-code" inputmode="numeric" maxlength="10" data-pp-zip data-pp-error="Please enter the postal code." required>
                                     <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
                             </div>
@@ -847,7 +767,7 @@ class Shortcodes {
                                     <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
                                 <label class="pp-field pp-field--span-3">Postal code *
-                                    <input name="temp_shipping_zip" type="text" placeholder="Zip code" autocomplete="section-temp postal-code" inputmode="numeric" maxlength="10" data-pp-zip-state="temp_shipping_state" data-pp-error="Please enter the postal code." required>
+                                    <input name="temp_shipping_zip" type="text" placeholder="Zip code" autocomplete="section-temp postal-code" inputmode="numeric" maxlength="10" data-pp-zip data-pp-error="Please enter the postal code." required>
                                     <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
                             </div>
@@ -892,7 +812,7 @@ class Shortcodes {
                                 <span class="pp-field-error" aria-hidden="true"></span>
                             </label>
                             <label class="pp-field pp-field--span-3">Postal code *
-                                <input name="billing_zip" type="text" value="<?php echo esc_attr( $values['billing_zip'] ); ?>" placeholder="Zip code" autocomplete="billing postal-code" inputmode="numeric" maxlength="10" data-pp-zip-state="billing_state" data-pp-error="Please enter the postal code." required>
+                                <input name="billing_zip" type="text" value="<?php echo esc_attr( $values['billing_zip'] ); ?>" placeholder="Zip code" autocomplete="billing postal-code" inputmode="numeric" maxlength="10" data-pp-zip data-pp-error="Please enter the postal code." required>
                                 <span class="pp-field-error" aria-hidden="true"></span>
                             </label>
                         </div>
@@ -977,7 +897,7 @@ class Shortcodes {
                                     <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
                                 <label class="pp-field pp-field--span-3">Postal code *
-                                    <input name="management_zip" type="text" placeholder="Zip code" autocomplete="section-management postal-code" inputmode="numeric" maxlength="10" data-pp-zip-state="management_state" data-pp-error="Please enter the postal code." required>
+                                    <input name="management_zip" type="text" placeholder="Zip code" autocomplete="section-management postal-code" inputmode="numeric" maxlength="10" data-pp-zip data-pp-error="Please enter the postal code." required>
                                     <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
                             </div>

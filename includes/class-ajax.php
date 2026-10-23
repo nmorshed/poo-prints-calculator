@@ -606,7 +606,7 @@ class Ajax {
     }
 
     /**
-     * Check each ZIP against its state, then store both the way USPS writes them
+     * Check each ZIP's length and its state, then store both the way USPS writes them
      * (12345 or 12345-6789, and the 2-letter code). $fields maps zip => [ state, label ].
      */
     private static function validate_us_zip_fields( &$posted, $fields ) {
@@ -619,9 +619,6 @@ class Ajax {
             $zip = preg_replace( '/\s+/', '', (string) ( $posted[ $zip_field ] ?? '' ) );
             if ( ! preg_match( '/^(\d{5})(?:-?(\d{4}))?$/D', $zip, $parts ) ) {
                 wp_send_json_error( [ 'message' => sprintf( 'Please enter a valid %s ZIP code (12345 or 12345-6789).', $label ) ] );
-            }
-            if ( ! Shortcodes::us_zip_matches_state( $parts[1], $state ) ) {
-                wp_send_json_error( [ 'message' => sprintf( 'The %s ZIP code %s isn\'t in %s.', $label, $parts[1], $state ) ] );
             }
 
             $posted[ $state_field ] = $state;

@@ -17,22 +17,9 @@ var ppFieldErrors = (function () {
   var ZIP_MESSAGE = 'Please enter a 5-digit ZIP code (or ZIP+4).';
   var uid = 0;
 
-  // A ZIP field names its State dropdown in data-pp-zip-state. The ZIP must be
-  // 12345 or 12345-6789, and its first three digits must be one of that state's
-  // USPS prefixes (ppFormV2.zip_prefixes, the same table the server checks).
-  function zipMessage(field) {
-    var match = String(field.value).replace(/\s+/g, '').match(/^(\d{5})(?:-?\d{4})?$/);
-    if (!match) return ZIP_MESSAGE;
-    var stateField = field.form ? field.form.querySelector('[name="' + field.getAttribute('data-pp-zip-state') + '"]') : null;
-    var state = stateField ? stateField.value : '';
-    var table = typeof ppFormV2 !== 'undefined' && ppFormV2.zip_prefixes ? ppFormV2.zip_prefixes : {};
-    if (!table[state]) return '';
-    var prefix = parseInt(match[1].slice(0, 3), 10);
-    var inState = table[state].split(',').some(function (range) {
-      var bounds = range.split('-');
-      return prefix >= parseInt(bounds[0], 10) && prefix <= parseInt(bounds[1] || bounds[0], 10);
-    });
-    return inState ? '' : 'This ZIP code isn’t in ' + state + '.';
+  // A ZIP field (data-pp-zip) must be 12345 or 12345-6789, as the server also checks.
+  function isZip(value) {
+    return /^\d{5}(?:-?\d{4})?$/.test(String(value).replace(/\s+/g, ''));
   }
 
   function wrapperFor(field) {
@@ -68,9 +55,8 @@ var ppFieldErrors = (function () {
     if (field.required && !String(field.value).trim()) {
       return field.getAttribute('data-pp-error') || 'This field is required.';
     }
-    if (field.hasAttribute('data-pp-zip-state') && String(field.value).trim()) {
-      var zip = zipMessage(field);
-      if (zip) return zip;
+    if (field.hasAttribute('data-pp-zip') && String(field.value).trim() && !isZip(field.value)) {
+      return ZIP_MESSAGE;
     }
     if (field.type === 'email' && validity.typeMismatch) return EMAIL_MESSAGE;
     if (validity.valid === false) return field.getAttribute('data-pp-error') || field.validationMessage;
@@ -121,12 +107,6 @@ var ppFieldErrors = (function () {
       ? radiosOf(field).some(function (r) { return r.getAttribute('aria-invalid') === 'true'; })
       : field.getAttribute('aria-invalid') === 'true';
     if (flagged) show(field, message(field));
-    // A new state can fix (or break) the ZIP flagged against the old one.
-    if (field.tagName === 'SELECT' && field.form && field.name) {
-      Array.prototype.slice.call(field.form.querySelectorAll('[data-pp-zip-state="' + field.name + '"][aria-invalid="true"]')).forEach(function (zip) {
-        show(zip, message(zip));
-      });
-    }
   }
 
   /** Re-check flagged fields whose value changed without an event (e.g. filled in by code). */
