@@ -201,6 +201,15 @@ class Ajax {
                 ] );
             }
 
+            $zip_fields = [ 'PostalCode3' => [ 'State3', 'property' ] ];
+            if ( 'no' === $shipping_same ) {
+                $zip_fields['shipping_zip'] = [ 'shipping_state', 'shipping' ];
+            }
+            if ( 'no' === $usps_receive ) {
+                $zip_fields['temp_shipping_zip'] = [ 'temp_shipping_state', 'temporary shipping' ];
+            }
+            self::validate_us_zip_fields( $posted, $zip_fields );
+
             if ( 'yes' === $shipping_same ) {
                 $posted['StreetAddress1']  = $posted['Address3Street1'] ?? '';
                 $posted['StreetAddress2']  = $posted['Address3Street2'] ?? '';
@@ -289,6 +298,7 @@ class Ajax {
             ];
 
             self::validate_form_v2_required_fields( $posted, $required_step_2 );
+            self::validate_us_zip_fields( $posted, [ 'billing_zip' => [ 'billing_state', 'billing' ] ] );
 
             if ( ! is_email( $posted['primary_email'] ) ) {
                 wp_send_json_error( [ 'message' => 'Please enter a valid Primary PooPrints contact email.' ] );
@@ -357,6 +367,7 @@ class Ajax {
                     'community_manager_email'      => 'Person who manages this community - email is required.',
                     'community_manager_job_title'  => 'Person who manages this community - job title is required.',
                 ] );
+                self::validate_us_zip_fields( $posted, [ 'management_zip' => [ 'management_state', 'management company' ] ] );
                 self::validate_form_v2_required_fields( $posted, [
                     'regional_manager_first_name' => 'Supervisor first name is required.',
                     'regional_manager_last_name'  => 'Supervisor last name is required.',
@@ -474,6 +485,7 @@ class Ajax {
                 'PostalCode'            => 'Postal code is required.',
                 '_HowDidYouHearAboutUs' => 'Please tell us how you heard about us.',
             ] );
+            self::validate_us_zip_fields( $posted, [ 'PostalCode' => [ 'State', 'property' ] ] );
 
             self::save_quote_present_fields( $posted, [
                 'JobTitle',
@@ -593,6 +605,30 @@ class Ajax {
         }
     }
 
+    /**
+     * Check each ZIP against its state, then store both the way USPS writes them
+     * (12345 or 12345-6789, and the 2-letter code). $fields maps zip => [ state, label ].
+     */
+    private static function validate_us_zip_fields( &$posted, $fields ) {
+        foreach ( $fields as $zip_field => list( $state_field, $label ) ) {
+            $state = Shortcodes::us_state_code( $posted[ $state_field ] ?? '' );
+            if ( '' === $state ) {
+                wp_send_json_error( [ 'message' => sprintf( 'Please select the %s state.', $label ) ] );
+            }
+
+            $zip = preg_replace( '/\s+/', '', (string) ( $posted[ $zip_field ] ?? '' ) );
+            if ( ! preg_match( '/^(\d{5})(?:-?(\d{4}))?$/D', $zip, $parts ) ) {
+                wp_send_json_error( [ 'message' => sprintf( 'Please enter a valid %s ZIP code (12345 or 12345-6789).', $label ) ] );
+            }
+            if ( ! Shortcodes::us_zip_matches_state( $parts[1], $state ) ) {
+                wp_send_json_error( [ 'message' => sprintf( 'The %s ZIP code %s isn\'t in %s.', $label, $parts[1], $state ) ] );
+            }
+
+            $posted[ $state_field ] = $state;
+            $posted[ $zip_field ]   = $parts[1] . ( empty( $parts[2] ) ? '' : '-' . $parts[2] );
+        }
+    }
+
     private static function validate_form_v2_email_field( $posted, $field_name, $message ) {
         if ( ! is_email( $posted[ $field_name ] ?? '' ) ) {
             wp_send_json_error( [ 'message' => $message ] );
@@ -686,6 +722,8 @@ class Ajax {
         $tier  = $units < 50
             ? ( $dogs < 9 ? 'tiered' : 'prime' )
             : ( $dogs < 15 ? 'tiered' : 'prime' );
+
+        self::apply_form_v2_tags( [ $config['tags'][ $tier ] ?? 0 ] );
 
         $redirect_key = strtolower( $property_type ) . '_' . $tier;
         $path         = $config['redirects'][ $redirect_key ] ?? '';

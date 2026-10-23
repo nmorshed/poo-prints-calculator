@@ -213,6 +213,8 @@ class Shortcodes {
             'tags' => [
                 'step_2' => 14543,
                 'step_3' => 14545,
+                'tiered' => 10174,
+                'prime'  => 3883,
             ],
             'quote_type_options' => [
                 'Rental',
@@ -250,6 +252,179 @@ class Shortcodes {
                 'hoa_prime'     => '/quote-hoa-prime',
             ],
         ];
+    }
+
+    /**
+     * USPS state and territory codes, used by the State dropdowns on both forms.
+     */
+    public static function us_states() {
+        return [
+            'AL' => 'Alabama',
+            'AK' => 'Alaska',
+            'AZ' => 'Arizona',
+            'AR' => 'Arkansas',
+            'CA' => 'California',
+            'CO' => 'Colorado',
+            'CT' => 'Connecticut',
+            'DE' => 'Delaware',
+            'DC' => 'District of Columbia',
+            'FL' => 'Florida',
+            'GA' => 'Georgia',
+            'HI' => 'Hawaii',
+            'ID' => 'Idaho',
+            'IL' => 'Illinois',
+            'IN' => 'Indiana',
+            'IA' => 'Iowa',
+            'KS' => 'Kansas',
+            'KY' => 'Kentucky',
+            'LA' => 'Louisiana',
+            'ME' => 'Maine',
+            'MD' => 'Maryland',
+            'MA' => 'Massachusetts',
+            'MI' => 'Michigan',
+            'MN' => 'Minnesota',
+            'MS' => 'Mississippi',
+            'MO' => 'Missouri',
+            'MT' => 'Montana',
+            'NE' => 'Nebraska',
+            'NV' => 'Nevada',
+            'NH' => 'New Hampshire',
+            'NJ' => 'New Jersey',
+            'NM' => 'New Mexico',
+            'NY' => 'New York',
+            'NC' => 'North Carolina',
+            'ND' => 'North Dakota',
+            'OH' => 'Ohio',
+            'OK' => 'Oklahoma',
+            'OR' => 'Oregon',
+            'PA' => 'Pennsylvania',
+            'RI' => 'Rhode Island',
+            'SC' => 'South Carolina',
+            'SD' => 'South Dakota',
+            'TN' => 'Tennessee',
+            'TX' => 'Texas',
+            'UT' => 'Utah',
+            'VT' => 'Vermont',
+            'VA' => 'Virginia',
+            'WA' => 'Washington',
+            'WV' => 'West Virginia',
+            'WI' => 'Wisconsin',
+            'WY' => 'Wyoming',
+            'AS' => 'American Samoa',
+            'GU' => 'Guam',
+            'MP' => 'Northern Mariana Islands',
+            'PR' => 'Puerto Rico',
+            'VI' => 'U.S. Virgin Islands',
+        ];
+    }
+
+    /**
+     * The first three ZIP digits USPS assigns to each state, as ranges. A ZIP must start
+     * with one of its state's prefixes. form-v2.js gets the same table through ppFormV2.
+     */
+    public static function us_zip_prefixes() {
+        return [
+            'AL' => '350-369',
+            'AK' => '995-999',
+            'AZ' => '850-865',
+            'AR' => '716-729,755',
+            'CA' => '900-961',
+            'CO' => '800-816',
+            'CT' => '060-069',
+            'DE' => '197-199',
+            'DC' => '200,202-205,569',
+            'FL' => '320-349',
+            'GA' => '300-319,398-399',
+            'HI' => '967-968',
+            'ID' => '832-838',
+            'IL' => '600-629',
+            'IN' => '460-479',
+            'IA' => '500-528',
+            'KS' => '660-679',
+            'KY' => '400-427',
+            'LA' => '700-714',
+            'ME' => '039-049',
+            'MD' => '206-219',
+            'MA' => '010-027,055',
+            'MI' => '480-499',
+            'MN' => '550-567',
+            'MS' => '386-397',
+            'MO' => '630-658',
+            'MT' => '590-599',
+            'NE' => '680-693',
+            'NV' => '889-898',
+            'NH' => '030-038',
+            'NJ' => '070-089',
+            'NM' => '870-884',
+            'NY' => '005,063,100-149',
+            'NC' => '270-289',
+            'ND' => '580-588',
+            'OH' => '430-459',
+            'OK' => '730-732,734-749',
+            'OR' => '970-979',
+            'PA' => '150-196',
+            'RI' => '028-029',
+            'SC' => '290-299',
+            'SD' => '570-577',
+            'TN' => '370-385',
+            'TX' => '733,750-799,885',
+            'UT' => '840-847',
+            'VT' => '050-054,056-059',
+            'VA' => '201,220-246',
+            'WA' => '980-994',
+            'WV' => '247-268',
+            'WI' => '530-549',
+            'WY' => '820-831,834',
+            'AS' => '967',
+            'GU' => '969',
+            'MP' => '969',
+            'PR' => '006-007,009',
+            'VI' => '008',
+        ];
+    }
+
+    /**
+     * A saved state ("tx", "Texas", "TX") as its USPS code, or '' when it isn't one.
+     */
+    public static function us_state_code( $value ) {
+        $value  = trim( (string) $value );
+        $states = self::us_states();
+        if ( isset( $states[ strtoupper( $value ) ] ) ) {
+            return strtoupper( $value );
+        }
+        foreach ( $states as $code => $name ) {
+            if ( 0 === strcasecmp( $name, $value ) ) {
+                return $code;
+            }
+        }
+        return '';
+    }
+
+    /**
+     * True when the ZIP's first three digits belong to the state.
+     */
+    public static function us_zip_matches_state( $zip, $state ) {
+        $prefixes = self::us_zip_prefixes()[ $state ] ?? '';
+        $prefix   = (int) substr( (string) $zip, 0, 3 );
+        foreach ( explode( ',', $prefixes ) as $range ) {
+            $bounds = array_map( 'intval', explode( '-', $range ) );
+            if ( $prefix >= $bounds[0] && $prefix <= ( $bounds[1] ?? $bounds[0] ) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * A State dropdown. $attrs is trusted markup written in this file.
+     */
+    private static function state_select( $name, $value, $attrs ) {
+        $selected = self::us_state_code( $value );
+        $html     = sprintf( '<select name="%s" %s><option value="">State</option>', esc_attr( $name ), $attrs );
+        foreach ( self::us_states() as $code => $state_name ) {
+            $html .= sprintf( '<option value="%1$s"%2$s>%1$s - %3$s</option>', esc_attr( $code ), selected( $selected, $code, false ), esc_html( $state_name ) );
+        }
+        return $html . '</select>';
     }
 
     /**
@@ -318,11 +493,11 @@ class Shortcodes {
                             <?php echo self::quote_field_error( 'City' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
                         </label>
                         <label class="pp-field pp-field--span-3">State *
-                            <input id="pp-qp-State" name="State" type="text" value="<?php echo esc_attr( $values['State'] ); ?>" placeholder="State" autocomplete="address-level1" data-pp-error="Please enter your state." required>
+                            <?php echo self::state_select( 'State', $values['State'], 'id="pp-qp-State" autocomplete="address-level1" data-pp-error="Please select your state." required' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
                             <?php echo self::quote_field_error( 'State' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
                         </label>
                         <label class="pp-field pp-field--span-3">Postal code *
-                            <input id="pp-qp-PostalCode" name="PostalCode" type="text" value="<?php echo esc_attr( $values['PostalCode'] ); ?>" inputmode="numeric" placeholder="ZIP" autocomplete="postal-code" maxlength="10" data-pp-error="Please enter your postal code." required>
+                            <input id="pp-qp-PostalCode" name="PostalCode" type="text" value="<?php echo esc_attr( $values['PostalCode'] ); ?>" inputmode="numeric" placeholder="ZIP" autocomplete="postal-code" maxlength="10" data-pp-zip-state="State" data-pp-error="Please enter your postal code." required>
                             <?php echo self::quote_field_error( 'PostalCode' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
                         </label>
                         <label class="pp-field pp-field--full">How did you hear about us? *
@@ -375,15 +550,48 @@ class Shortcodes {
                 </section>
 
                 <div class="pp-form-v2__notice" data-pp-quote-notice role="status" aria-live="polite"></div>
-                <div class="pp-quote-present__decision" data-pp-quote-decision hidden>
+                <div class="pp-quote-present__decision" data-pp-quote-decision role="dialog" aria-modal="true" aria-labelledby="pp-quote-decision-title" hidden>
                     <div class="pp-quote-present__decision-card">
-                        <a class="pp-quote-present__decision-image-link" data-pp-quote-decision-link aria-label="Your quote is being prepared" aria-disabled="true" tabindex="-1">
-                            <span class="pp-quote-present__decision-progress" data-pp-quote-decision-progress role="progressbar" aria-label="Preparing your quote" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-                                <span data-pp-quote-decision-progress-fill></span>
-                            </span>
-                            <img src="https://portal.pooprints.net/wp-content/uploads/2026/09/preparing-quote.jpg" alt="Your quote is being prepared. Continue when ready.">
-                        </a>
-                        <a class="pp-quote-present__decision-cta" data-pp-quote-decision-cta hidden>See My Quote</a>
+                        <span class="pp-quote-present__decision-progress" data-pp-quote-decision-progress role="progressbar" aria-label="Preparing your quote" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                            <span data-pp-quote-decision-progress-fill></span>
+                        </span>
+
+                        <div class="pp-quote-present__decision-head pp-quote-present__reveal">
+                            <p class="pp-quote-present__decision-kicker"><span aria-hidden="true"></span>Preparing your quote</p>
+                            <h2 class="pp-quote-present__decision-title" id="pp-quote-decision-title">Two steps for faster PooPrints approval.</h2>
+                        </div>
+
+                        <ol class="pp-quote-present__tips">
+                            <li class="pp-quote-present__tip pp-quote-present__reveal pp-quote-present__reveal--2">
+                                <span class="pp-quote-present__tip-num" aria-hidden="true">1</span>
+                                <div class="pp-quote-present__tip-text">
+                                    <h3>Customize the ROI to match your community</h3>
+                                    <p>Adjust pet rent, dog fees, staff wages, and cleanup hours in the ROI section to match your community. Use these ROI inputs to show management how much PooPrints saves in time and money.</p>
+                                </div>
+                                <picture class="pp-quote-present__tip-visual">
+                                    <source type="image/avif" srcset="https://portal.pooprints.net/wp-content/uploads/2026/09/ROI-Community-Information-Panel.avif">
+                                    <img src="https://portal.pooprints.net/wp-content/uploads/2026/09/ROI-Community-Information-Panel.png" width="610" height="457" decoding="async"
+                                         alt="The ROI's Community Information panel, where you can change monthly rent per dog, the dog fee, hidden dogs and staff wage.">
+                                </picture>
+                            </li>
+                            <li class="pp-quote-present__tip pp-quote-present__reveal pp-quote-present__reveal--3">
+                                <span class="pp-quote-present__tip-num" aria-hidden="true">2</span>
+                                <div class="pp-quote-present__tip-text">
+                                    <h3>Forward quote with ROI to management for faster approval</h3>
+                                    <p>Click the Forward Quote button to open a ready-to-send email with your investment, year-1 savings, and a link to your quote. Adjust the ROI inputs first, because the email uses your ROI numbers to make the ask more convincing and help you get approval faster.</p>
+                                </div>
+                                <!-- A picture of the quote page's Forward Quote button, drawn in HTML (not clickable) -->
+                                <span class="pp-quote-present__tip-visual pp-quote-present__forward-demo" role="img" aria-label="The Forward Quote button on your quote">
+                                    <span class="pp-quote-present__forward-btn" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>
+                                        Forward Quote
+                                    </span>
+                                    <span class="pp-quote-present__forward-sub" aria-hidden="true">Forward for approval.</span>
+                                </span>
+                            </li>
+                        </ol>
+
+                        <a class="pp-quote-present__decision-cta" data-pp-quote-decision-cta hidden>See my quote</a>
                     </div>
                 </div>
             </form>
@@ -558,11 +766,11 @@ class Shortcodes {
                                 <span class="pp-field-error" aria-hidden="true"></span>
                             </label>
                             <label class="pp-field pp-field--span-3">State *
-                                <input name="State3" type="text" value="<?php echo esc_attr( $values['State3'] ); ?>" placeholder="State" autocomplete="section-property address-level1" maxlength="2" data-pp-error="Please enter the state." required>
+                                <?php echo self::state_select( 'State3', $values['State3'], 'autocomplete="section-property address-level1" data-pp-error="Please select the state." required' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
                                 <span class="pp-field-error" aria-hidden="true"></span>
                             </label>
                             <label class="pp-field pp-field--span-3">Postal code *
-                                <input name="PostalCode3" type="text" value="<?php echo esc_attr( $values['PostalCode3'] ); ?>" placeholder="Zip code" autocomplete="section-property postal-code" inputmode="numeric" maxlength="10" data-pp-error="Please enter the postal code." required>
+                                <input name="PostalCode3" type="text" value="<?php echo esc_attr( $values['PostalCode3'] ); ?>" placeholder="Zip code" autocomplete="section-property postal-code" inputmode="numeric" maxlength="10" data-pp-zip-state="State3" data-pp-error="Please enter the postal code." required>
                                 <span class="pp-field-error" aria-hidden="true"></span>
                             </label>
                             <label class="pp-field pp-field--span-6">Phone number *
@@ -600,11 +808,11 @@ class Shortcodes {
                                     <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
                                 <label class="pp-field pp-field--span-3">State *
-                                    <input name="shipping_state" type="text" value="<?php echo esc_attr( $values['State'] ); ?>" placeholder="State" autocomplete="shipping address-level1" maxlength="2" data-pp-error="Please enter the state." required>
+                                    <?php echo self::state_select( 'shipping_state', $values['State'], 'autocomplete="shipping address-level1" data-pp-error="Please select the state." required' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
                                     <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
                                 <label class="pp-field pp-field--span-3">Postal code *
-                                    <input name="shipping_zip" type="text" value="<?php echo esc_attr( $values['PostalCode'] ); ?>" placeholder="Zip code" autocomplete="shipping postal-code" inputmode="numeric" maxlength="10" data-pp-error="Please enter the postal code." required>
+                                    <input name="shipping_zip" type="text" value="<?php echo esc_attr( $values['PostalCode'] ); ?>" placeholder="Zip code" autocomplete="shipping postal-code" inputmode="numeric" maxlength="10" data-pp-zip-state="shipping_state" data-pp-error="Please enter the postal code." required>
                                     <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
                             </div>
@@ -635,11 +843,11 @@ class Shortcodes {
                                     <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
                                 <label class="pp-field pp-field--span-3">State *
-                                    <input name="temp_shipping_state" type="text" placeholder="State" autocomplete="section-temp address-level1" maxlength="2" data-pp-error="Please enter the state." required>
+                                    <?php echo self::state_select( 'temp_shipping_state', '', 'autocomplete="section-temp address-level1" data-pp-error="Please select the state." required' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
                                     <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
                                 <label class="pp-field pp-field--span-3">Postal code *
-                                    <input name="temp_shipping_zip" type="text" placeholder="Zip code" autocomplete="section-temp postal-code" inputmode="numeric" maxlength="10" data-pp-error="Please enter the postal code." required>
+                                    <input name="temp_shipping_zip" type="text" placeholder="Zip code" autocomplete="section-temp postal-code" inputmode="numeric" maxlength="10" data-pp-zip-state="temp_shipping_state" data-pp-error="Please enter the postal code." required>
                                     <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
                             </div>
@@ -680,11 +888,11 @@ class Shortcodes {
                                 <span class="pp-field-error" aria-hidden="true"></span>
                             </label>
                             <label class="pp-field pp-field--span-3">State *
-                                <input name="billing_state" type="text" value="<?php echo esc_attr( $values['billing_state'] ); ?>" placeholder="State" autocomplete="billing address-level1" maxlength="2" data-pp-error="Please enter the state." required>
+                                <?php echo self::state_select( 'billing_state', $values['billing_state'], 'autocomplete="billing address-level1" data-pp-error="Please select the state." required' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
                                 <span class="pp-field-error" aria-hidden="true"></span>
                             </label>
                             <label class="pp-field pp-field--span-3">Postal code *
-                                <input name="billing_zip" type="text" value="<?php echo esc_attr( $values['billing_zip'] ); ?>" placeholder="Zip code" autocomplete="billing postal-code" inputmode="numeric" maxlength="10" data-pp-error="Please enter the postal code." required>
+                                <input name="billing_zip" type="text" value="<?php echo esc_attr( $values['billing_zip'] ); ?>" placeholder="Zip code" autocomplete="billing postal-code" inputmode="numeric" maxlength="10" data-pp-zip-state="billing_state" data-pp-error="Please enter the postal code." required>
                                 <span class="pp-field-error" aria-hidden="true"></span>
                             </label>
                         </div>
@@ -765,11 +973,11 @@ class Shortcodes {
                                     <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
                                 <label class="pp-field pp-field--span-3">State *
-                                    <input name="management_state" type="text" placeholder="State" autocomplete="section-management address-level1" maxlength="2" data-pp-error="Please enter the state." required>
+                                    <?php echo self::state_select( 'management_state', '', 'autocomplete="section-management address-level1" data-pp-error="Please select the state." required' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
                                     <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
                                 <label class="pp-field pp-field--span-3">Postal code *
-                                    <input name="management_zip" type="text" placeholder="Zip code" autocomplete="section-management postal-code" inputmode="numeric" maxlength="10" data-pp-error="Please enter the postal code." required>
+                                    <input name="management_zip" type="text" placeholder="Zip code" autocomplete="section-management postal-code" inputmode="numeric" maxlength="10" data-pp-zip-state="management_state" data-pp-error="Please enter the postal code." required>
                                     <span class="pp-field-error" aria-hidden="true"></span>
                                 </label>
                             </div>

@@ -134,8 +134,13 @@
   width: 18px;
 }
 
-.pp-form-v2 input[readonly] {
+.pp-form-v2 input[readonly],
+.pp-form-v2 select[aria-readonly="true"] {
   background: var(--ppv2-soft);
+}
+
+.pp-form-v2 select[aria-readonly="true"] {
+  pointer-events: none;
 }
 
 .pp-form-v2__grid {
@@ -642,116 +647,324 @@
   max-width: 620px;
 }
 
+/* The full-screen layer. It scrolls when the card is taller than the screen (phones). */
 .pp-quote-present__decision {
-  align-items: center;
-  background: rgba(255, 255, 255, 0.86);
-  bottom: 0;
-  display: flex;
-  justify-content: center;
-  left: 0;
   position: fixed;
-  right: 0;
-  top: 0;
+  inset: 0;
   z-index: 9999;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 24px;
+  background: rgba(244, 245, 247, 0.92);
 }
 
 .pp-quote-present__decision[hidden] {
   display: none;
 }
 
-.pp-quote-present__decision-card {
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  margin: 24px;
-  max-width: 720px;
-  width: calc(100% - 48px);
+.pp-quote-present__decision,
+.pp-quote-present__decision *,
+.pp-quote-present__decision *::before,
+.pp-quote-present__decision *::after {
+  box-sizing: border-box;
 }
 
-.pp-quote-present__decision-image-link {
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 12px 34px rgba(15, 23, 42, 0.16);
-  display: block;
-  line-height: 0;
-  overflow: hidden;
+/* The white card. margin:auto centres it when it fits and keeps the top reachable when it doesn't. */
+.pp-quote-present__decision-card {
   position: relative;
   width: 100%;
-}
-
-.pp-quote-present__decision-image-link[href] {
-  cursor: pointer;
-}
-
-.pp-quote-present__decision-image-link:focus-visible,
-.pp-quote-present__decision-cta:focus-visible {
-  outline: 4px solid var(--ppq-red);
-  outline-offset: 5px;
-}
-
-.pp-quote-present__decision-image-link[aria-disabled="true"] {
-  cursor: wait;
-  pointer-events: none;
-}
-
-.pp-quote-present__decision-progress {
-  background: rgba(255, 255, 255, 0.72);
-  display: block;
-  height: 8px;
-  left: 0;
+  max-width: 760px;
+  margin: auto;
+  padding: 40px 32px 32px;
   overflow: hidden;
-  pointer-events: none;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  color: #0F172A;
+  font-family: inherit;
+  text-align: left;
+}
+
+/* Progress bar along the top edge of the card */
+.pp-quote-present__decision-progress {
   position: absolute;
-  right: 0;
   top: 0;
-  z-index: 1;
+  left: 0;
+  right: 0;
+  display: block;
+  height: 6px;
+  overflow: hidden;
+  background: #FEECEE;
+  pointer-events: none;
 }
 
 .pp-quote-present__decision-progress span {
-  background: var(--ppq-red);
   display: block;
-  height: 100%;
-  transition: width 0.3s ease;
   width: 0;
+  height: 100%;
+  background: var(--ppq-red);
+  transition: width 0.3s ease;
 }
 
-.pp-quote-present__decision-image-link img {
+/* Heading */
+.pp-quote-present__decision-kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 8px;
+  color: #6B7280;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.pp-quote-present__decision-kicker span {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--ppq-red);
+}
+
+.pp-quote-present__decision-title {
+  margin: 0;
+  color: #0F172A;
+  font-size: clamp(22px, 2.6vw, 28px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+/* The two tips */
+.pp-quote-present__tips {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pp-quote-present__tip {
+  display: grid;
+  grid-template-columns: 36px 1fr 240px;
+  gap: 16px 20px;
+  align-items: center;
+  margin: 0;
+  padding: 20px;
+  background: #F4F5F7;
   border-radius: 10px;
+}
+
+.pp-quote-present__tip-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: start;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: var(--ppq-red);
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(225, 29, 46, 0.25);
+}
+
+.pp-quote-present__tip-text h3 {
+  margin: 4px 0 6px;
+  color: #0F172A;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.pp-quote-present__tip-text p {
+  margin: 0;
+  color: #0F172A;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.pp-quote-present__tip-visual {
   display: block;
-  height: auto;
-  max-width: 100%;
+  justify-self: end;
   width: 100%;
 }
 
-.pp-quote-present__decision-cta {
-  background: #e11d2d;
-  border-radius: 8px;
-  box-shadow: 0 8px 20px rgba(225, 29, 45, 0.24);
-  color: #fff;
+.pp-quote-present__tip-visual img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #E5E7EB;
+  border-radius: 10px;
+}
+
+/* Drawing of the quote page's Forward Quote button as it sits on the quote page's gray sections:
+   white button, dark outline, straight on the tip's gray (no box, so it doesn't pull the eye) */
+.pp-quote-present__forward-demo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  pointer-events: none;
+}
+
+.pp-quote-present__forward-btn {
   display: inline-flex;
-  font-size: 17px;
-  font-weight: 800;
-  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 22px;
+  border: 1.5px solid #0F172A;
+  border-radius: 10px;
+  background: #FFFFFF;
+  color: #0F172A;
+  font-size: 15px;
+  font-weight: 600;
   line-height: 1.2;
-  margin-top: 20px;
-  min-width: 190px;
-  padding: 14px 28px;
+  white-space: nowrap;
+}
+
+.pp-quote-present__forward-btn svg {
+  flex-shrink: 0;
+}
+
+.pp-quote-present__forward-sub {
+  color: #4B5563;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* See my quote (shown by form-v2.js when the quote is ready) */
+.pp-quote-present__decision-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: fit-content;
+  margin: 24px auto 0;
+  padding: 13px 32px;
+  background: var(--ppq-red);
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(225, 29, 46, 0.28);
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.5;
   text-decoration: none;
+  cursor: pointer;
+  animation: pp-quote-reveal 0.4s ease both;
+}
+
+/* Arrow after "See my quote" */
+.pp-quote-present__decision-cta::after {
+  content: "";
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14M13 5l7 7-7 7'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14M13 5l7 7-7 7'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
 .pp-quote-present__decision-cta:hover {
-  background: #bd1624;
-  color: #fff;
+  background: var(--ppq-red-dark);
+  color: #FFFFFF;
   text-decoration: none;
+}
+
+.pp-quote-present__decision-cta:focus-visible {
+  outline: 2px solid var(--ppq-red);
+  outline-offset: 2px;
 }
 
 .pp-quote-present__decision-cta[hidden] {
   display: none;
 }
 
+/* Fade-in, one after another, from the moment the overlay appears:
+   heading 0.2s, tip 1 at 0.8s, tip 2 at 3.2s (form-v2.js shows the button after 6s). */
+.pp-quote-present__decision:not([hidden]) .pp-quote-present__reveal {
+  animation: pp-quote-reveal 0.6s ease 0.2s both;
+}
+
+.pp-quote-present__decision:not([hidden]) .pp-quote-present__reveal--2 {
+  animation-delay: 0.8s;
+}
+
+.pp-quote-present__decision:not([hidden]) .pp-quote-present__reveal--3 {
+  animation-delay: 3.2s;
+}
+
+@keyframes pp-quote-reveal {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Tablet and phone: the picture moves under the text */
+@media (max-width: 920px) {
+  .pp-quote-present__decision-card {
+    padding: 36px 24px 24px;
+  }
+
+  .pp-quote-present__tip {
+    grid-template-columns: 36px 1fr;
+  }
+
+  .pp-quote-present__tip-visual {
+    grid-column: 2;
+    justify-self: start;
+    max-width: 360px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pp-quote-present__decision {
+    padding: 12px;
+  }
+
+  .pp-quote-present__decision-card {
+    padding: 32px 18px 20px;
+  }
+
+  .pp-quote-present__tip {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .pp-quote-present__tip-num {
+    width: 32px;
+    height: 32px;
+    font-size: 15px;
+  }
+
+  .pp-quote-present__tip-visual {
+    grid-column: 1;
+    max-width: none;
+  }
+
+  .pp-quote-present__decision-cta {
+    width: 100%;
+  }
+}
+
+/* Visitors who turned animations off see everything at once */
 @media (prefers-reduced-motion: reduce) {
   .pp-quote-present__decision-progress span {
     transition: none;
+  }
+
+  .pp-quote-present__decision:not([hidden]) .pp-quote-present__reveal,
+  .pp-quote-present__decision-cta {
+    animation: none;
   }
 }
 

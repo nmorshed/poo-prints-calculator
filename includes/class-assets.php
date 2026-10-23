@@ -172,6 +172,7 @@ class Assets {
                 'action'       => 'pooprints_form_v2_submit',
                 'quote_nonce'  => wp_create_nonce( 'which_quote_to_present' ),
                 'quote_action' => 'which_quote_to_present_submit',
+                'zip_prefixes' => Shortcodes::us_zip_prefixes(),
             ] );
             self::$form_v2_localized = true;
         }
