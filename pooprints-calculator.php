@@ -87,3 +87,24 @@ add_shortcode('test_pooprints_set', function() {
 
     return $output;
 });
+
+
+add_filter( 'wp_nav_menu_portal-header-logged-in_items', function ( $items, $args ) {
+    if ( is_user_logged_in() ) {
+        $items .= '<li class="menu-item menu-item-logout">'
+                . do_shortcode( '[memb_logout_link linktext="Log Out" url="' . home_url( '/' ) . '"]' )
+                . '</li>';
+    }
+    return $items;
+}, 10, 2 );
+
+
+// Requested by Nick
+add_action( 'wp_login_failed', function () {
+    // Only for our /login/ form. The regular WordPress login is not affected.
+    if ( empty( $_POST['pp_login_form'] ) ) {
+        return;
+    }
+    wp_safe_redirect( home_url( '/login/?login=failed' ) );
+    exit;
+}, PHP_INT_MAX );
